@@ -14,17 +14,12 @@
 
       public int Value { get; set; }
 
-      /// <summary>
-      /// Wprowadzona wartość
-      /// </summary>
-      public int OrginalValue { get; set; }
 
       public InputData(int a_id, InputType a_inputType, int a_value)
       {
          Id = a_id;
          Type = a_inputType;
          Value = a_value;
-         OrginalValue = a_value;
       }
    }
 }

@@ -17,19 +17,19 @@ namespace App.Core
          return arr;
       }
 
-      public static DataGridCell[][] CreateEmptyGrid(int a_dostawcyCount, int a_odbiorcyCount)
+      public static GridCell[][] CreateEmptyGrid(int a_dostawcyCount, int a_odbiorcyCount)
       {
-         var grid = Init2DimmArray<DataGridCell>(a_odbiorcyCount, a_dostawcyCount);
+         var grid = Init2DimmArray<GridCell>(a_odbiorcyCount, a_dostawcyCount);
          return InitDataGrid(grid);
       }
 
-      private static DataGridCell[][] InitDataGrid(DataGridCell[][] a_grid)
+      private static GridCell[][] InitDataGrid(GridCell[][] a_grid)
       {
          for (int y = 0; y < a_grid.Length; y++)
          {
             for (int x = 0; x < a_grid[y].Length; x++)
             {
-               a_grid[y][x] = new DataGridCell(x, y);
+               a_grid[y][x] = new GridCell(x, y);
             }
          }
          return a_grid;

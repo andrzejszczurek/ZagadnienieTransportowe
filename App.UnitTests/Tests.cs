@@ -34,7 +34,12 @@ namespace App.UnitTests
 
          solver.Resolve();
 
-         var 
+         var iterations = solver.Iteracje;
+
+         Assert.AreEqual(3, iterations.Count);
+         Assert.AreEqual(1120, iterations[0].KosztyTransportu);
+         Assert.AreEqual(1050, iterations[1].KosztyTransportu);
+         Assert.AreEqual(970, iterations[2].KosztyTransportu);
 
       }
 

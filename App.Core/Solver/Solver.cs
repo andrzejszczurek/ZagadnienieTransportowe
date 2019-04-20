@@ -43,15 +43,20 @@ namespace App.Core.Solver
          var iteracja = m_iteracjaStartowa;
          int? aktualneKoszty = null;
          var isOptimal = false;
+         iteracja.CalculateGridInit(Dostawcy, Odbiorcy);
+         aktualneKoszty = iteracja.KosztyTransportu;
          while (!isOptimal)
          {
-            iteracja.CalculateGrid(Dostawcy, Odbiorcy);
-
-            if (aktualneKoszty is null)
-               aktualneKoszty = iteracja.KosztyTransportu;
-
             var nextStepGrid = iteracja.CalculateNextIteration();
+
+            if (iteracja.IsOptimal)
+            {
+               isOptimal = true;
+               continue;
+            }
+
             iteracja = new Iteration(nextStepGrid);
+            iteracja.CalculateKosztyTransportu();
             var zoptymalizowaneKoszty = iteracja.KosztyTransportu;
 
             if (aktualneKoszty > zoptymalizowaneKoszty)
@@ -59,6 +64,7 @@ namespace App.Core.Solver
                aktualneKoszty = zoptymalizowaneKoszty;
 
                Iteracje.Add(iteracja);
+               iteracja.CalculateGrid(Dostawcy, Odbiorcy);
                continue;
             }
             isOptimal = true;

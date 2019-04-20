@@ -42,12 +42,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extenssions.cs" />
-    <Compile Include="Model\Cykl.cs" />
-    <Compile Include="Model\DataGridCell.cs" />
+    <Compile Include="Model\Cycle.cs" />
+    <Compile Include="Model\GridCell.cs" />
     <Compile Include="Model\InputData.cs" />
     <Compile Include="Model\Iteration.cs" />
-    <Compile Include="Model\Node.cs" />
-    <Compile Include="Model\Punkt.cs" />
+    <Compile Include="Model\CyclePoint.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Solver\CycleDetector.cs" />
     <Compile Include="Solver\Solver.cs" />

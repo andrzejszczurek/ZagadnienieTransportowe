@@ -2,7 +2,7 @@
 
 namespace App.Core.Model
 {
-   public class Punkt
+   public class CyclePoint
    {
       public Guid CycleId { get; set; }
 
@@ -14,12 +14,12 @@ namespace App.Core.Model
 
       public bool IsStart { get; set; }
 
-      public Punkt(int a_y, int a_x)
+      public CyclePoint(int a_y, int a_x)
          : this(a_y, a_x, false)
       {
       }
 
-      public Punkt(int a_y, int a_x, bool a_isStart)
+      public CyclePoint(int a_y, int a_x, bool a_isStart)
       {
          IsStart = a_isStart;
          Y = a_y;
@@ -33,9 +33,9 @@ namespace App.Core.Model
          return X >= 0 && Y >= 0;
       }
 
-      public static Punkt Copy(Punkt a_punkt)
+      public static CyclePoint Copy(CyclePoint a_punkt)
       {
-         return new Punkt(a_punkt.Y, a_punkt.X, a_punkt.IsStart);
+         return new CyclePoint(a_punkt.Y, a_punkt.X, a_punkt.IsStart);
       }
    }
 }

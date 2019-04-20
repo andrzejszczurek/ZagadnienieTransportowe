@@ -4,26 +4,26 @@ using System.Linq;
 
 namespace App.Core.Model
 {
-   public class Cykl
+   public class Cycle
    {
       public Guid CycleId { get;}
 
-      public Punkt A { get; set; }
+      public CyclePoint A { get; set; }
 
-      public Punkt B { get; set; }
+      public CyclePoint B { get; set; }
 
-      public Punkt C { get; set; }
+      public CyclePoint C { get; set; }
 
-      public Punkt D { get; set; }
+      public CyclePoint D { get; set; }
 
-      public Punkt Start { get; set; }
+      public CyclePoint Start { get; set; }
 
-      public Cykl(Punkt a, Punkt b, Punkt c, Punkt d)
+      public Cycle(CyclePoint a, CyclePoint b, CyclePoint c, CyclePoint d)
       {
-         A = Punkt.Copy(a);
-         B = Punkt.Copy(b);
-         C = Punkt.Copy(c);
-         D = Punkt.Copy(d);
+         A = CyclePoint.Copy(a);
+         B = CyclePoint.Copy(b);
+         C = CyclePoint.Copy(c);
+         D = CyclePoint.Copy(d);
          CycleId = Guid.NewGuid();
          A.CycleId = CycleId;
          B.CycleId = CycleId;
@@ -32,9 +32,9 @@ namespace App.Core.Model
          Start = ToPointsList().Single(p => p.IsStart);
       }
 
-      public List<Punkt> ToPointsList()
+      public List<CyclePoint> ToPointsList()
       {
-         return new List<Punkt>() { A, B, C, D };
+         return new List<CyclePoint>() { A, B, C, D };
       }
 
       public bool IsPositive()

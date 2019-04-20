@@ -6,7 +6,7 @@ namespace App.Core.Model
 {
    public class Iteration
    {
-      public DataGridCell[][] DataGrid { get; set; }
+      public GridCell[][] DataGrid { get; set; }
 
       public int?[] Alfa { get; set; }
 
@@ -14,17 +14,27 @@ namespace App.Core.Model
 
       public int KosztyTransportu { get; set; }
 
-      public Iteration(DataGridCell[][] a_grid)
+      public bool IsOptimal { get; set; }
+
+      public Iteration(GridCell[][] a_grid)
       {
          DataGrid = a_grid;
       }
 
-      public void CalculateGrid(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
+      public void CalculateGridInit(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
       {
          CalculatePrzydzial(a_dostawcy, a_odbiorcy);
          CalculateWspolczynnikiAlfaAndBeta(a_dostawcy, a_odbiorcy);
          CalculateDeltyNiebazowe();
-         KosztyTransportu = CalculateKosztyTransportu();
+         CalculateKosztyTransportu();
+      }
+
+      public void CalculateGrid(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
+      {
+         //CalculatePrzydzial(a_dostawcy, a_odbiorcy);
+         CalculateWspolczynnikiAlfaAndBeta(a_dostawcy, a_odbiorcy);
+         CalculateDeltyNiebazowe();
+         CalculateKosztyTransportu();
       }
 
       public void CalculatePrzydzial(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
@@ -42,28 +52,28 @@ namespace App.Core.Model
 
                if (o.Value == 0)
                {
-                  cell.Przydział = null;
+                  cell.Przydzial = null;
                   continue;
                }
 
                if (d.Value == 0)
                {
-                  cell.Przydział = null;
+                  cell.Przydzial = null;
                   continue;
                }
 
                if (aktualneZapotrzebowanie >= aktualnaPodaz)
                {
-                  cell.Przydział = aktualnaPodaz;
+                  cell.Przydzial = aktualnaPodaz;
                   d.Value = 0;
                   o.Value = o.Value - aktualnaPodaz;
                   continue;
                }
                if (aktualneZapotrzebowanie < aktualnaPodaz)
                {
-                  cell.Przydział = aktualneZapotrzebowanie;
+                  cell.Przydzial = aktualneZapotrzebowanie;
                   d.Value = d.Value - aktualneZapotrzebowanie;
-                  o.Value = o.Value - cell.Przydział ?? 0;
+                  o.Value = o.Value - cell.Przydzial ?? 0;
                   continue;
                }
             }
@@ -85,7 +95,7 @@ namespace App.Core.Model
 
                for (int a = 0; a < Alfa.Length; a++)
                {
-                  if (Alfa[a] != null && DataGrid[a][b].Przydział != null)
+                  if (Alfa[a] != null && DataGrid[a][b].Przydzial != null)
                   {
                      Beta[b] = DataGrid[a][b].KosztyJednostkowe - Alfa[a];
                      break;
@@ -100,7 +110,7 @@ namespace App.Core.Model
 
                for (int b = 0; b < Beta.Length; b++)
                {
-                  if (Beta[b] != null && DataGrid[a][b].Przydział != null)
+                  if (Beta[b] != null && DataGrid[a][b].Przydzial != null)
                   {
                      Alfa[a] = DataGrid[a][b].KosztyJednostkowe - Beta[b];
                      break;
@@ -113,7 +123,7 @@ namespace App.Core.Model
          }
       }
 
-      public int CalculateKosztyTransportu()
+      public void CalculateKosztyTransportu()
       {
          int koszty = 0;
          for (int j = 0; j < DataGrid.Length; j++)
@@ -121,10 +131,10 @@ namespace App.Core.Model
             for (int i = 0; i < DataGrid[j].Length; i++)
             {
                var cell = DataGrid[j][i];
-               koszty += cell.KosztyJednostkowe * cell.Przydział ?? 0;
+               koszty += cell.KosztyJednostkowe * cell.Przydzial ?? 0;
             }
          }
-         return koszty;
+         KosztyTransportu = koszty;
       }
 
       public void CalculateDeltyNiebazowe()
@@ -134,7 +144,7 @@ namespace App.Core.Model
             for (int x = 0; x < DataGrid[y].Length; x++)
             {
                var cell = DataGrid[y][x];
-               if (cell.Przydział != null)
+               if (cell.Przydzial != null)
                   cell.DeltaNiebazowa = null;
                else
                   cell.DeltaNiebazowa = cell.KosztyJednostkowe - Alfa[y] - Beta[x];
@@ -143,9 +153,13 @@ namespace App.Core.Model
       }
 
       
-      public DataGridCell[][] CalculateNextIteration()
+      public GridCell[][] CalculateNextIteration()
       {
          var cycleDetector = new CycleDetector(DataGrid).Detect();
+         IsOptimal = cycleDetector.IsOptimal;
+         if (cycleDetector.IsOptimal)
+            return null;
+
          var cycle = cycleDetector.WyznaczonyCykl;
          var przydzial = cycleDetector.FindPrzydzialDoOptymalizacji();
 
@@ -169,33 +183,33 @@ namespace App.Core.Model
 
                var wsp = cyclePoints.SingleOrDefault(e => e.Id == DataGrid[j][i].Id);
                if (wsp is null)
-                  nextIterationGrid[j][i].Przydział = DataGrid[j][i].Przydział;
+                  nextIterationGrid[j][i].Przydzial = DataGrid[j][i].Przydzial;
                else
                {
                   var isEx = true;
                   if (p1_negatywny.Id == wsp.Id || p2_negatywny.Id == wsp.Id)
                   {
-                     if (DataGrid[j][i].Przydział is null)
+                     if (DataGrid[j][i].Przydzial is null)
                      {
-                        DataGrid[j][i].Przydział = 0;
+                        DataGrid[j][i].Przydzial = 0;
                         isEx = false;
                      }
 
-                     nextIterationGrid[j][i].Przydział = DataGrid[j][i].Przydział - przydzial;
+                     nextIterationGrid[j][i].Przydzial = DataGrid[j][i].Przydzial - przydzial;
                   }
                   else
                   {
-                     if (DataGrid[j][i].Przydział is null)
+                     if (DataGrid[j][i].Przydzial is null)
                      {
-                        DataGrid[j][i].Przydział = 0;
+                        DataGrid[j][i].Przydzial = 0;
                         isEx = false;
                      }
 
-                     nextIterationGrid[j][i].Przydział = DataGrid[j][i].Przydział + przydzial;
+                     nextIterationGrid[j][i].Przydzial = DataGrid[j][i].Przydzial + przydzial;
                   }
 
-                  if (nextIterationGrid[j][i].Przydział == 0 && isEx)
-                     nextIterationGrid[j][i].Przydział = null;
+                  if (nextIterationGrid[j][i].Przydzial == 0 && isEx)
+                     nextIterationGrid[j][i].Przydzial = null;
                }
             }
          }
