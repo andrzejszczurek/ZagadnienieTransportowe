@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace App.Core.Model
 {
@@ -18,6 +16,8 @@ namespace App.Core.Model
 
       public Punkt D { get; set; }
 
+      public Punkt Start { get; set; }
+
       public Cykl(Punkt a, Punkt b, Punkt c, Punkt d)
       {
          A = Punkt.Copy(a);
@@ -29,42 +29,18 @@ namespace App.Core.Model
          B.CycleId = CycleId;
          C.CycleId = CycleId;
          D.CycleId = CycleId;
+         Start = ToPointsList().Single(p => p.IsStart);
+      }
 
+      public List<Punkt> ToPointsList()
+      {
+         return new List<Punkt>() { A, B, C, D };
       }
 
       public bool IsPositive()
       {
          return A.IsPositive() && B.IsPositive()
             && C.IsPositive() && D.IsPositive();
-      }
-
-      public class Punkt
-      {
-         public Guid CycleId { get; set; }
-
-         public int X { get; set; }
-
-         public int Y { get; set; }
-
-         public string Id { get; set; }
-
-         public Punkt(int y, int x)
-         {
-            Y = y;
-            X = x;
-            if (IsPositive())
-               Id = X.ToString() + Y.ToString();
-         }
-
-         public bool IsPositive()
-         {
-            return X >= 0 && Y >= 0;
-         }
-
-         public static Punkt Copy(Punkt a_punkt)
-         {
-            return new Punkt(a_punkt.Y, a_punkt.X);
-         }
       }
 
    }
