@@ -7,25 +7,37 @@ namespace App.Core.Solver
 {
    public class CycleDetector
    {
+      public string NegativeElementId { get; private set; }
+
+      public Cycle WyznaczonyCykl { get; private set; }
+
+      public bool IsOptimal { get; private set; }
+
+      public (bool IsError, string Message) Error { get; private set; }
+
       private GridCell[][] m_grid;
 
-      public string NegativeElementId { get; set; }
-
-      public Cycle WyznaczonyCykl { get; set; }
-
-      public bool IsOptimal { get; set; }
 
       public CycleDetector(GridCell[][] a_grid)
       {
          m_grid = a_grid;
-         NegativeElementId = FindNegativeElementId();
+         NegativeElementId = FindLeastElementId();
+         if (Error.IsError)
+            return;
          IsOptimal = NegativeElementId is null ? true : false;
       }
 
+
+      /// <summary>
+      /// Wykrywa cykl dla zadanej siatki optymalizacji.
+      /// </summary>
       public CycleDetector Detect()
       {
-         if (!IsOptimal)
+         if (!IsOptimal && !Error.IsError)
+         {
             WyznaczonyCykl = FindCycle();
+            MarkPointsType();
+         }
          return this;
       }
 
@@ -34,7 +46,6 @@ namespace App.Core.Solver
       { 
          var startY = int.Parse(NegativeElementId[0].ToString());
          var startX = int.Parse(NegativeElementId[1].ToString());
-
          var cycles = new List<Cycle>();
          for (int i = 1; i < m_grid.Length; i++)
          {
@@ -47,28 +58,28 @@ namespace App.Core.Solver
                var c1 = new CyclePoint(startY - j, startX - i);
                var d1 = new CyclePoint(startY - j, startX);
                var cykl1 = new Cycle(a, b1, c1, d1);
-               if (cykl1.IsPositive())
+               if (cykl1.IsInGridScope())
                   cycles.Add(cykl1);
 
                var b2 = new CyclePoint(startY, startX - i);
                var c2 = new CyclePoint(startY + j, startX - i);
                var d2 = new CyclePoint(startY + j, startX);
                var cykl2 = new Cycle(a, b2, c2, d2);
-               if (cykl2.IsPositive())
+               if (cykl2.IsInGridScope())
                   cycles.Add(cykl2);
 
                var b3 = new CyclePoint(startY, startX + i);
                var c3 = new CyclePoint(startY + j, startX + i);
                var d3 = new CyclePoint(startY + j, startX);
                var cykl3 = new Cycle(a, b3, c3, d3);
-               if (cykl3.IsPositive())
+               if (cykl3.IsInGridScope())
                   cycles.Add(cykl3);
 
                var b4 = new CyclePoint(startY, startX + i);
                var c4 = new CyclePoint(startY - j, startX + i);
                var d4 = new CyclePoint(startY - j, startX);
                var cykl4 = new Cycle(a, b4, c4, d4);
-               if (cykl4.IsPositive())
+               if (cykl4.IsInGridScope())
                   cycles.Add(cykl4);
                #endregion [Impl]
             }
@@ -92,13 +103,19 @@ namespace App.Core.Solver
       }
 
 
-      private string FindNegativeElementId()
+      private string FindLeastElementId()
       {
          var minEl = m_grid.SelectMany(x => x.Select(v => new { v.Id, v.DeltaNiebazowa }))
                            .Where(x => x.DeltaNiebazowa != null)
                            .OrderBy(x => x.DeltaNiebazowa)
-                           .First();
-         if (minEl.DeltaNiebazowa > 0)
+                           .FirstOrDefault();
+         if (minEl is null)
+         {
+            Error = (true, "Nie udało się określić punktu początkowego dla cyklu. Zweryfikuj dane wejściowe.");
+            return null;
+         }
+
+         if (minEl.DeltaNiebazowa >= 0)
             return null;
 
          return minEl.Id;
@@ -148,6 +165,7 @@ namespace App.Core.Solver
          return false;
       }
 
+
       public int FindPrzydzialDoOptymalizacji()
       {
          var startPositionId = WyznaczonyCykl.Start.Id;
@@ -167,6 +185,25 @@ namespace App.Core.Solver
          return el1.Przydzial.Value < el2.Przydzial.Value
                   ? el1.Przydzial.Value
                   : el2.Przydzial.Value;
+      }
+
+      private void MarkPointsType()
+      {
+         var cyclePoints = WyznaczonyCykl.ToPointsList();
+
+         var poz_el = WyznaczonyCykl.Start;
+         var punktyCyklu = cyclePoints.ToList();
+         punktyCyklu.Remove(punktyCyklu.Single(e => e.Id == poz_el.Id));
+         var p1_negatywny = punktyCyklu.Single(x => x.Y == int.Parse(poz_el.Id[0].ToString()));
+         punktyCyklu.Remove(p1_negatywny);
+         var p2_negatywny = punktyCyklu.Single(x => x.X == int.Parse(poz_el.Id[1].ToString()));
+         punktyCyklu.Remove(p2_negatywny);
+         var p2_pozytywny = punktyCyklu.First();
+
+         poz_el.Type = CyclePoint.CyclePointType.CyklDodatni;
+         p1_negatywny.Type = CyclePoint.CyclePointType.CyklUjemny;
+         p2_negatywny.Type = CyclePoint.CyclePointType.CyklUjemny;
+         p2_pozytywny.Type = CyclePoint.CyclePointType.CyklDodatni;
       }
 
    }

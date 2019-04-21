@@ -44,6 +44,8 @@ namespace ZagadnienieTransportowe.Forms
          Dostawcy = new Dictionary<int, LocalizedTextBox>();
          m_resultLabels = new List<(int Iteracja, List<LocalizedLabel> Labelki)>();
          InitBaseGrid();
+         if (IsControlsDebugMode)
+            tabResult.TabPages.Add(GenerateResultTabInternal(5, 5, new Iteration(null, 1)));
       }
 
       private void ResolveJob()
@@ -51,8 +53,21 @@ namespace ZagadnienieTransportowe.Forms
          var userData = UserDataAdapter.Adapt(GridMap, Odbiorcy, Dostawcy);
          var solver = new Solver(userData);
          solver.Init();
-         solver.Resolve();
-         PrepareResultData(solver.Iteracje);
+
+         try
+         {
+            solver.Resolve();
+            if (!solver.OptimalSolutionFound)
+            {
+               MessageBox.Show(solver.ErrorMessage);
+               return;
+            }
+            PrepareResultData(solver.Iteracje);
+         }
+         catch (Exception ex)
+         {
+            MessageBox.Show($"Podczas rozwiązywania zadania wystąpił błąd: {ex.StackTrace}");
+         }
       }
 
       private void PrepareResultData(List<Iteration> iteracje)
@@ -79,6 +94,7 @@ namespace ZagadnienieTransportowe.Forms
 
       #region [Events]
 
+
       private void BtnClearGridClicked(object sender, EventArgs e)
       {
          foreach (var cell in GridMap)
@@ -101,6 +117,7 @@ namespace ZagadnienieTransportowe.Forms
          _rowIndex = 0;
          _columnIndex = 0;
          InitBaseGrid();
+         tabResult.TabPages.Clear();
       }
 
 
@@ -219,7 +236,7 @@ namespace ZagadnienieTransportowe.Forms
          lblTable.Width = 150;
          lblTable.Height = 15;
          lblTable.TextAlign = ContentAlignment.MiddleCenter;
-         lblTable.Location = new Point(45, 6);
+         lblTable.Location = new Point(45, 3);
          lblTable.Font = new Font(lblTable.Font, FontStyle.Bold);
          if (IsControlsDebugMode)
             lblTable.BackColor = Color.Red;
@@ -230,27 +247,37 @@ namespace ZagadnienieTransportowe.Forms
          lblTable2.Width = 150;
          lblTable2.Height = 15;
          lblTable2.TextAlign = ContentAlignment.MiddleCenter;
-         lblTable2.Location = new Point(45, 164);
+         lblTable2.Location = new Point(45, 155);
          lblTable2.Font = new Font(lblTable2.Font, FontStyle.Bold);
          if (IsControlsDebugMode)
             lblTable2.BackColor = Color.Red;
          tp.Controls.Add(lblTable2);
 
+         var koszty = IsControlsDebugMode ? "-" : a_iteracja.KosztyTransportu.ToString();
+         var lblKoszty = new Label();
+         lblKoszty.Text = $"Koszty transportu: {koszty}";
+         lblKoszty.Width = 150;
+         lblKoszty.Height = 15;
+         lblKoszty.TextAlign = ContentAlignment.MiddleCenter;
+         lblKoszty.Location = new Point(40, tabResult.Height - 45);
+         lblKoszty.Font = new Font(lblKoszty.Font, FontStyle.Bold);
+         if (IsControlsDebugMode)
+            lblKoszty.BackColor = Color.Red;
+         tp.Controls.Add(lblKoszty);
+
          var panelKoszty = new Panel();
-         //panelKoszty.BackColor = Color.Brown;
          panelKoszty.Width = 220;
          panelKoszty.Height = 130;
-         panelKoszty.Location = new Point(10, 27);
+         panelKoszty.Location = new Point(10, 21);
          panelKoszty.AutoScroll = true;
          panelKoszty.Name = p1Key;
          if (IsControlsDebugMode)
             panelKoszty.BackColor = Color.Red;
 
          var panelOptymalizacja = new Panel();
-         //panelOptymalizacja.BackColor = Color.Black;
          panelOptymalizacja.Width = 220;
          panelOptymalizacja.Height = 130;
-         panelOptymalizacja.Location = new Point(10, 185);
+         panelOptymalizacja.Location = new Point(10, 174);
          panelOptymalizacja.AutoScroll = true;
          panelOptymalizacja.Name = p2Key;
          if (IsControlsDebugMode)
@@ -268,6 +295,7 @@ namespace ZagadnienieTransportowe.Forms
          var cell_height = 2 * offset + lbl_height;
 
          var cellGrid = a_iteracja.DataGrid;
+         var cyklPoints = a_iteracja.Cykl?.ToPointsList();
          // labelki informacyjne dostawcy
          for (int y = 0; y < a_y; y++)
          {
@@ -293,6 +321,18 @@ namespace ZagadnienieTransportowe.Forms
                lblgridText = !IsControlsDebugMode ? (cellGrid[y][x].DeltaNiebazowa ?? 0).ToString() : "-";
                var cellLbl2 = CreateLblForResult(lblgridText, x_pos, y_pos, LocalizedLabel.LocalizatorType.TabelaOptymalizacji, position);
                panelOptymalizacja.Controls.Add(cellLbl2);
+
+               var cyclePoint = cyklPoints?.SingleOrDefault(c => c.Id == position);
+               if (!(cyclePoint is null))
+               {
+                  if (cyclePoint.IsStart)
+                     cellLbl2.BackColor = Color.FromArgb(65, 148, 181);
+                  else if (cyclePoint.Type == CyclePoint.CyclePointType.CyklDodatni)
+                     cellLbl2.BackColor = Color.FromArgb(50, 130, 46);
+                  else
+                     cellLbl2.BackColor = Color.FromArgb(211, 88, 88);
+               }
+
             }
          }
 
@@ -431,5 +471,6 @@ namespace ZagadnienieTransportowe.Forms
 
 
       #endregion [Utility]
+
    }
 }

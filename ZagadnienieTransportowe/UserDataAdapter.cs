@@ -10,11 +10,14 @@ namespace ZagadnienieTransportowe
 {
    internal static class UserDataAdapter
    {
+      /// <summary>
+      /// Tworzy dane wejściowe dla solvera na podstawie danych z kontrolek.
+      /// </summary>
       internal static UserData Adapt(Dictionary<string, LocalizedTextBox> a_cells
                                     ,Dictionary<int, LocalizedTextBox> a_odbiorcy
                                     ,Dictionary<int, LocalizedTextBox> a_dostawcy)
       {
-         var us_grid = Utility.CreateEmptyGrid(a_dostawcy.Count(), a_odbiorcy.Count());
+         var us_grid = Utility.CreateEmptyCellGrid(a_dostawcy.Count(), a_odbiorcy.Count());
          foreach (var cell in a_cells)
          {
             var y = int.Parse(cell.Key[0].ToString());

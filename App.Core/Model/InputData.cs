@@ -6,11 +6,12 @@
       Odbiorca
    }
 
+
    public class InputData
    {
-      public int Id { get; set; }
+      public int Id { get; }
 
-      public InputType Type { get; set; }
+      public InputType Type { get; }
 
       public int Value { get; set; }
 

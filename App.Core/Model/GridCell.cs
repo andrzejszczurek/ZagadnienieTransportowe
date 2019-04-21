@@ -2,7 +2,7 @@
 {
    public class GridCell
    {
-      public string Id { get; set; }
+      public string Id { get; }
 
       public int? Przydzial { get; set; }
 

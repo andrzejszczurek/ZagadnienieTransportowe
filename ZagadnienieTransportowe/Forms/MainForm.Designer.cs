@@ -74,7 +74,7 @@
          this.grid.AutoScroll = true;
          this.grid.Location = new System.Drawing.Point(81, 70);
          this.grid.Name = "grid";
-         this.grid.Size = new System.Drawing.Size(406, 246);
+         this.grid.Size = new System.Drawing.Size(400, 246);
          this.grid.TabIndex = 1;
          // 
          // gbInputData
@@ -88,7 +88,7 @@
          this.gbInputData.Controls.Add(this.btnAddRow);
          this.gbInputData.Location = new System.Drawing.Point(12, 58);
          this.gbInputData.Name = "gbInputData";
-         this.gbInputData.Size = new System.Drawing.Size(494, 325);
+         this.gbInputData.Size = new System.Drawing.Size(488, 325);
          this.gbInputData.TabIndex = 2;
          this.gbInputData.TabStop = false;
          this.gbInputData.Text = "Dane wejściowe";
@@ -101,7 +101,7 @@
          this.lblGridError.Name = "lblGridError";
          this.lblGridError.Size = new System.Drawing.Size(265, 41);
          this.lblGridError.TabIndex = 2;
-         this.lblGridError.Text = "Tabela z danymi wejściowymi zawiera błędy. Popraw je i spróbój ponownie";
+         this.lblGridError.Text = "Tabela z danymi wejściowymi zawiera błędy. Popraw je i spróbuj ponownie";
          // 
          // grResults
          // 
@@ -143,7 +143,7 @@
          this.button2.Name = "button2";
          this.button2.Size = new System.Drawing.Size(100, 40);
          this.button2.TabIndex = 5;
-         this.button2.Text = "Reseruj dane";
+         this.button2.Text = "Reseruj siatkę";
          this.button2.UseVisualStyleBackColor = true;
          this.button2.Click += new System.EventHandler(this.BtnResetGridClicked);
          // 

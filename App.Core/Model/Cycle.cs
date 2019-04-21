@@ -6,17 +6,18 @@ namespace App.Core.Model
 {
    public class Cycle
    {
-      public Guid CycleId { get;}
+      public Guid CycleId { get; }
 
-      public CyclePoint A { get; set; }
+      public CyclePoint A { get; }
 
-      public CyclePoint B { get; set; }
+      public CyclePoint B { get; }
 
-      public CyclePoint C { get; set; }
+      public CyclePoint C { get; }
 
-      public CyclePoint D { get; set; }
+      public CyclePoint D { get; }
 
-      public CyclePoint Start { get; set; }
+      public CyclePoint Start { get; }
+
 
       public Cycle(CyclePoint a, CyclePoint b, CyclePoint c, CyclePoint d)
       {
@@ -32,16 +33,21 @@ namespace App.Core.Model
          Start = ToPointsList().Single(p => p.IsStart);
       }
 
-      public List<CyclePoint> ToPointsList()
-      {
-         return new List<CyclePoint>() { A, B, C, D };
-      }
 
-      public bool IsPositive()
-      {
-         return A.IsPositive() && B.IsPositive()
-            && C.IsPositive() && D.IsPositive();
-      }
+      /// <summary>
+      /// Zwraca punkty cyklu jako lista.
+      /// </summary>
+      public List<CyclePoint> ToPointsList()
+         => new List<CyclePoint>() { A, B, C, D };
+
+
+
+      /// <summary>
+      /// Sprawdza czy cykl znajduję się w siatce.
+      /// </summary>
+      public bool IsInGridScope()
+         => A.IsInGridScope() && B.IsInGridScope()
+            && C.IsInGridScope() && D.IsInGridScope();
 
    }
 }
