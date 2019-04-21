@@ -1,5 +1,8 @@
-﻿using App.Core.Solver;
+﻿using App.Core;
+using App.Core.Model;
+using App.Core.Solver;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 
 namespace App.UnitTests
 {
@@ -41,6 +44,40 @@ namespace App.UnitTests
          Assert.AreEqual(1050, iterations[1].KosztyTransportu);
          Assert.AreEqual(970, iterations[2].KosztyTransportu);
 
+      }
+
+      [TestMethod]
+      public void CalculatePrzydzial_Test()
+      {
+         var odbiorcy = new List<InputData>()
+         {
+            new InputData(0, InputType.Odbiorca, 20),
+            new InputData(1, InputType.Odbiorca, 40),
+            new InputData(2, InputType.Odbiorca, 90),
+         };
+
+         var dostawcy = new List<InputData>()
+         {
+            new InputData(0, InputType.Dostawca, 50),
+            new InputData(1, InputType.Dostawca, 70),
+            new InputData(2, InputType.Dostawca, 30),
+         };
+
+         var datagrid = Utility.CreateEmptyGrid(3, 3);
+         var iteracja = new Iteration(datagrid, 1);
+         iteracja.CalculatePrzydzial(dostawcy, odbiorcy);
+
+         Assert.AreEqual(20, iteracja.DataGrid[0][0].Przydzial);
+         Assert.AreEqual(30, iteracja.DataGrid[0][1].Przydzial);
+         Assert.AreEqual(null, iteracja.DataGrid[0][2].Przydzial);
+
+         Assert.AreEqual(null, iteracja.DataGrid[1][0].Przydzial);
+         Assert.AreEqual(10, iteracja.DataGrid[1][1].Przydzial);
+         Assert.AreEqual(60, iteracja.DataGrid[1][2].Przydzial);
+
+         Assert.AreEqual(null, iteracja.DataGrid[2][0].Przydzial);
+         Assert.AreEqual(null, iteracja.DataGrid[2][1].Przydzial);
+         Assert.AreEqual(30, iteracja.DataGrid[2][2].Przydzial);
       }
 
 

@@ -31,7 +31,7 @@ namespace ZagadnienieTransportowe.Forms
       private readonly Dictionary<int, LocalizedTextBox> Dostawcy;
       private readonly List<(int Iteracja, List<LocalizedLabel> Labelki)> m_resultLabels;
 
-      private const bool IsControlsDebugMode = true;
+      private const bool IsControlsDebugMode = false;
 
       public MainForm()
       {

@@ -53,7 +53,7 @@ namespace App.Core.Model
                var aktualneZapotrzebowanie = o.Value;
                var aktualnaPodaz = d.Value;
 
-               if (o.Value == 0)
+               if (o.Value == 0) // popyt odbiorcy
                {
                   cell.Przydzial = null;
                   continue;
