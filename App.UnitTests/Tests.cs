@@ -7,7 +7,7 @@ namespace App.UnitTests
    public class Tests
    {
       [TestMethod]
-      public void SolveJob()
+      public void SolveJob_1()
       {
          var solver = new Solver(null);
          solver.AddDostawca(50);
