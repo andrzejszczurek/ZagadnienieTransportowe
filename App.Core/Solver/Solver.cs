@@ -8,29 +8,45 @@ namespace App.Core.Solver
    {
       private readonly UserData m_userData;
 
-      public List<InputData> Dostawcy { get; set; }
+      public List<InputData> Dostawcy { get; }
 
-      public List<InputData> Odbiorcy { get; set; }
+      public List<InputData> Odbiorcy { get; }
 
-      public List<Iteration> Iteracje { get; set; }
+      public List<Iteration> Iteracje { get; }
 
       private Iteration m_iteracjaStartowa;
 
       private bool m_isInit;
 
+      private int m_iterator;
+
       public Solver(UserData a_userData)
       {
          m_userData = a_userData;
-         Dostawcy = new List<InputData>();
-         Odbiorcy = new List<InputData>();
+         Dostawcy = a_userData is null ? new List<InputData>() : m_userData.Dostawcy;
+         Odbiorcy = a_userData is null ? new List<InputData>() : m_userData.Odbiorcy;
          Iteracje = new List<Iteration>();
          m_isInit = false;
+         m_iterator = 0;
       }
 
+      /// <summary>
+      /// Inicjalizuje początkową iterację dla zadanych dostawców i odbiorców.
+      /// Jeżeli podczas tworzenia instancji solvera nie zostały przekazane dane wejściowe, 
+      /// po wykonaniu Init należy dodać koszty.
+      /// </summary>
       public void Init()
       {
-         var grid = Utility.CreateEmptyGrid(Dostawcy.Count, Odbiorcy.Count);
-         var iteracjaStartowa = new Iteration(grid);
+         var isUserDataSet = !(m_userData is null);
+
+         if (!isUserDataSet && (Dostawcy.Count < 1 || Odbiorcy.Count < 1))
+            throw new Exception("Przed zainicjowaniem solvera należy dodać conajmniej jednego dostawce oraz odbiorcę.");
+
+         GridCell[][] grid = isUserDataSet
+                           ? m_userData.SiatkaKosztowJednostkowych
+                           : Utility.CreateEmptyGrid(Dostawcy.Count, Odbiorcy.Count);
+
+         var iteracjaStartowa = new Iteration(grid, ++m_iterator);
          m_iteracjaStartowa = iteracjaStartowa;
          Iteracje.Add(iteracjaStartowa);
          m_isInit = true;
@@ -55,7 +71,7 @@ namespace App.Core.Solver
                continue;
             }
 
-            iteracja = new Iteration(nextStepGrid);
+            iteracja = new Iteration(nextStepGrid, ++m_iterator);
             iteracja.CalculateKosztyTransportu();
             var zoptymalizowaneKoszty = iteracja.KosztyTransportu;
 
@@ -86,13 +102,13 @@ namespace App.Core.Solver
 
       public void AddDostawca(int a_value)
       {
-         var supp = new InputData(Dostawcy.Count + 1, InputType.Dostawca, a_value);
+         var supp = new InputData(Dostawcy.Count, InputType.Dostawca, a_value);
          Dostawcy.Add(supp);
       }
 
       public void AddOdbiorca(int a_value)
       {
-         var supp = new InputData(Odbiorcy.Count + 1, InputType.Odbiorca, a_value);
+         var supp = new InputData(Odbiorcy.Count, InputType.Odbiorca, a_value);
          Odbiorcy.Add(supp);
       }
 

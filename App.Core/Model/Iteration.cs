@@ -16,15 +16,18 @@ namespace App.Core.Model
 
       public bool IsOptimal { get; set; }
 
-      public Iteration(GridCell[][] a_grid)
+      public int Number { get; set; }
+
+      public Iteration(GridCell[][] a_grid, int a_number)
       {
+         Number = a_number;
          DataGrid = a_grid;
       }
 
       public void CalculateGridInit(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
       {
          CalculatePrzydzial(a_dostawcy, a_odbiorcy);
-         CalculateWspolczynnikiAlfaAndBeta(a_dostawcy, a_odbiorcy);
+         CalculateWspolczynnikiAlfaAndBeta();
          CalculateDeltyNiebazowe();
          CalculateKosztyTransportu();
       }
@@ -32,7 +35,7 @@ namespace App.Core.Model
       public void CalculateGrid(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
       {
          //CalculatePrzydzial(a_dostawcy, a_odbiorcy);
-         CalculateWspolczynnikiAlfaAndBeta(a_dostawcy, a_odbiorcy);
+         CalculateWspolczynnikiAlfaAndBeta();
          CalculateDeltyNiebazowe();
          CalculateKosztyTransportu();
       }
@@ -44,8 +47,8 @@ namespace App.Core.Model
             for (int x = 0; x < DataGrid[y].Length; x++)
             {
                var cell = DataGrid[y][x];
-               var d = a_dostawcy.Single(dos => dos.Id == y+1);
-               var o = a_odbiorcy.Single(odb => odb.Id == x+1);
+               var d = a_dostawcy.Single(dos => dos.Id == y);
+               var o = a_odbiorcy.Single(odb => odb.Id == x);
 
                var aktualneZapotrzebowanie = o.Value;
                var aktualnaPodaz = d.Value;
@@ -80,10 +83,10 @@ namespace App.Core.Model
          }
       }
 
-      public void CalculateWspolczynnikiAlfaAndBeta(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
+      public void CalculateWspolczynnikiAlfaAndBeta()
       {
-         Alfa = new int?[a_dostawcy.Count()];
-         Beta = new int?[a_odbiorcy.Count()];
+         Alfa = new int?[DataGrid.Length];
+         Beta = new int?[DataGrid[0].Length];
          Alfa[0] = 0;
          var isCalculated = false;
          while (!isCalculated)

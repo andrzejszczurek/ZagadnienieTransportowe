@@ -1,25 +1,31 @@
-﻿using System.Collections.Generic;
+﻿using App.Core.Model;
+using System.Collections.Generic;
 
 namespace App.Core.Solver
 {
    public class UserData
    {
       /// <summary>
-      /// Słownik kosztów jednostkowych podanych przez użytkownika.
-      /// Klucz to pozycja na gridzie (y + x).
+      /// Siatka kosztów jednostkowych.
       /// </summary>
-      public Dictionary<string, int> KosztyJednostkowe { get; set; }
+      public GridCell[][] SiatkaKosztowJednostkowych { get; set; }
 
       /// <summary>
-      /// Słownik dostawców z wartościa podaży.
-      /// Klucz to indeks dla pozycji na gridzie
+      /// Lista Dostawów.
       /// </summary>
-      public Dictionary<string, int> Dostawcy { get; set; }
+      public List<InputData> Dostawcy { get; set; }
 
       /// <summary>
-      /// Słownik odbiorców z wartością popytu.
-      /// Klucz to indeks dla pozycji na gridzie
+      /// Lista Odbiorców.
       /// </summary>
-      public Dictionary<string, int> Odbiorcy { get; set; }
+      public List<InputData> Odbiorcy { get; set; }
+
+
+      public UserData(GridCell[][] a_koszty, List<InputData> a_dostawcy, List<InputData> a_odbiorcy)
+      {
+         SiatkaKosztowJednostkowych = a_koszty;
+         Dostawcy = a_dostawcy;
+         Odbiorcy = a_odbiorcy;
+      }
    }
 }

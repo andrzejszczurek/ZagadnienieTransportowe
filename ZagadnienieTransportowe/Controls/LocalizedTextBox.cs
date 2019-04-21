@@ -3,11 +3,11 @@ using System.Windows.Forms;
 
 namespace ZagadnienieTransportowe.Controls
 {
-   public class MarkedTextBox : TextBox
+   public class LocalizedTextBox : TextBox
    {
       public Guid UniqueId { get; set; }
 
-      public MarkedTextBox()
+      public LocalizedTextBox()
          : base()
       {
          UniqueId = Guid.NewGuid();

@@ -46,14 +46,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controls\MarkedTextBox.cs">
+    <Compile Include="Controls\MarkedLabel.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Forms\AddInputForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Forms\AddInputForm.Designer.cs">
-      <DependentUpon>AddInputForm.cs</DependentUpon>
+    <Compile Include="Controls\LocalizedTextBox.cs">
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Forms\MainForm.cs">
       <SubType>Form</SubType>
@@ -63,9 +60,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Forms\AddInputForm.resx">
-      <DependentUpon>AddInputForm.cs</DependentUpon>
-    </EmbeddedResource>
+    <Compile Include="UserDataAdapter.cs" />
     <EmbeddedResource Include="Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
