@@ -352,7 +352,7 @@ namespace ZagadnienieTransportowe.Forms
       }
 
 
-      private int MarkControlifNotValid(TextBox cell)
+      private int MarkControlIfNotValid(TextBox cell)
       {
          if (int.TryParse(cell.Text, out int value))
          {

@@ -31,8 +31,8 @@ namespace App.Core.Solver
       public Solver(UserData a_userData)
       {
          m_userData = a_userData;
-         Dostawcy = a_userData is null ? new List<InputData>() : m_userData.Dostawcy;
-         Odbiorcy = a_userData is null ? new List<InputData>() : m_userData.Odbiorcy;
+         Dostawcy = a_userData is null ? new List<InputData>() : m_userData.Dostawcy; // todo: to powinny być kopia pełna 
+         Odbiorcy = a_userData is null ? new List<InputData>() : m_userData.Odbiorcy; // todo: to powinny być kopia pełna
          Iteracje = new List<Iteration>();
          m_isInit = false;
          m_iterator = 0;
@@ -44,6 +44,7 @@ namespace App.Core.Solver
       /// Inicjalizuje początkową iterację dla zadanych dostawców i odbiorców.
       /// Jeżeli podczas tworzenia instancji solvera nie zostały przekazane dane wejściowe, 
       /// po wykonaniu Init należy dodać koszty.
+      /// Po wykonaniu Init, brak możliwości definiowania dostawców i odbiorców.
       /// </summary>
       public void Init()
       {
@@ -51,6 +52,14 @@ namespace App.Core.Solver
 
          if (!isUserDataSet && (Dostawcy.Count < 1 || Odbiorcy.Count < 1))
             throw new Exception("Przed zainicjowaniem solvera należy dodać conajmniej jednego dostawce oraz odbiorcę.");
+
+         if (!IsBalanced())
+         {
+            AddVirtualInputData();
+            OptimalSolutionFound = false;
+            ErrorMessage = "Zadanie nie jest zbilansowane. Brak wsparcia dla tego typu danych.";
+            return;
+         }
 
          GridCell[][] grid = isUserDataSet
                            ? m_userData.SiatkaKosztowJednostkowych
@@ -62,6 +71,16 @@ namespace App.Core.Solver
          m_isInit = true;
       }
 
+      private void AddVirtualInputData()
+      {
+         var popyt = Odbiorcy.Sum(o => o.Value);
+         var podaz = Dostawcy.Sum(o => o.Value);
+         if (popyt > podaz)
+            Dostawcy.Add(new InputData(Dostawcy.Count + 1, InputType.Dostawca, popyt - podaz, true));
+         else
+            Odbiorcy.Add(new InputData(Odbiorcy.Count + 1, InputType.Odbiorca, podaz - popyt, true));
+      }
+
 
       /// <summary>
       /// Rozwiązuje zadanie w iteraciach.
@@ -69,12 +88,6 @@ namespace App.Core.Solver
       public void Resolve()
       {
          CanByResolve();
-         if (!IsBalanced())
-         {
-            OptimalSolutionFound = false;
-            ErrorMessage = "Zadanie nie jest zbilansowane. Brak wsparcia dla tego typu danych.";
-            return;
-         }
 
          var attempt = 0;
          var iteracja = m_iteracjaStartowa;
@@ -150,12 +163,19 @@ namespace App.Core.Solver
 
       public void AddDostawca(int a_value)
       {
+         if (m_isInit)
+            throw new Exception("Nrak możliwości dodania dostawcy. Solver został już zainicjowany");
+
          var supp = new InputData(Dostawcy.Count, InputType.Dostawca, a_value);
          Dostawcy.Add(supp);
       }
 
       public void AddOdbiorca(int a_value)
       {
+         if (m_isInit)
+            throw new Exception("Nrak możliwości dodania odbiorcy. Solver został już zainicjowany");
+
+
          var supp = new InputData(Odbiorcy.Count, InputType.Odbiorca, a_value);
          Odbiorcy.Add(supp);
       }
