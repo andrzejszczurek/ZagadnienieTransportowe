@@ -22,6 +22,8 @@ namespace App.Core.Model
 
       public int Number { get; }
 
+      public bool IsCorrect { get; private set; }
+
 
       public Iteration(GridCell[][] a_grid, int a_number)
       {
@@ -85,7 +87,10 @@ namespace App.Core.Model
 
          IsOptimal = cycleDetector.IsOptimal;
          if (cycleDetector.IsOptimal)
+         {
+            IsCorrect = true;
             return null;
+         }
 
          var cycle = cycleDetector.WyznaczonyCykl;
          Cykl = cycle;
@@ -108,6 +113,7 @@ namespace App.Core.Model
             for (int i = 0; i < DataGrid[j].Length; i++)
             {
                nextIterationGrid[j][i].KosztyJednostkowe = DataGrid[j][i].KosztyJednostkowe;
+               nextIterationGrid[j][i].IsVirtual = DataGrid[j][i].IsVirtual;
 
                var wsp = cyclePoints.SingleOrDefault(e => e.Id == DataGrid[j][i].Id);
                if (wsp is null)
@@ -141,6 +147,7 @@ namespace App.Core.Model
                }
             }
          }
+         IsCorrect = true;
          return nextIterationGrid;
       }
 

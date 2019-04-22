@@ -23,7 +23,7 @@ namespace App.Core.Model
 
       public int MyProperty { get; set; }
 
-      public CyclePointType Type { get; set; }
+      public CyclePointType? Type { get; set; }
 
 
 

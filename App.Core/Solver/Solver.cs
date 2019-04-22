@@ -53,17 +53,24 @@ namespace App.Core.Solver
          if (!isUserDataSet && (Dostawcy.Count < 1 || Odbiorcy.Count < 1))
             throw new Exception("Przed zainicjowaniem solvera należy dodać conajmniej jednego dostawce oraz odbiorcę.");
 
-         if (!IsBalanced())
+
+         var isBalaced = IsBalanced();
+         if (!isBalaced)
          {
             AddVirtualInputData();
-            OptimalSolutionFound = false;
-            ErrorMessage = "Zadanie nie jest zbilansowane. Brak wsparcia dla tego typu danych.";
-            return;
+            //OptimalSolutionFound = false;
+            //ErrorMessage = "Zadanie nie jest zbilansowane. Brak wsparcia dla tego typu danych.";
+            //return;
          }
-
          GridCell[][] grid = isUserDataSet
-                           ? m_userData.SiatkaKosztowJednostkowych
-                           : Utility.CreateEmptyCellGrid(Dostawcy.Count, Odbiorcy.Count);
+                              ? m_userData.SiatkaKosztowJednostkowych
+                              : Utility.CreateEmptyCellGrid(Dostawcy.Count, Odbiorcy.Count);
+
+         if (!isBalaced && isUserDataSet)
+         {
+            RecalculateDataGrid();
+            grid = m_userData.SiatkaKosztowJednostkowych;
+         }
 
          var iteracjaStartowa = new Iteration(grid, ++m_iterator);
          m_iteracjaStartowa = iteracjaStartowa;
@@ -71,14 +78,47 @@ namespace App.Core.Solver
          m_isInit = true;
       }
 
+      private void RecalculateDataGrid()
+      {
+         var virtualGrid = Utility.CreateEmptyCellGrid(Dostawcy.Count, Odbiorcy.Count);
+         for (int y = 0; y < m_userData.SiatkaKosztowJednostkowych.Length; y++)
+         {
+            for (int x = 0; x < m_userData.SiatkaKosztowJednostkowych[y].Length; x++)
+            {
+               var cell = m_userData.SiatkaKosztowJednostkowych[y][x];
+               var newCell = new GridCell(x, y);
+               newCell.KosztyJednostkowe = cell.KosztyJednostkowe;
+               virtualGrid[y][x] = newCell;
+            }
+         }
+
+         var virtualOdbiorcaIndex = Odbiorcy.SingleOrDefault(e => e.IsVirtual)?.Id;
+         var virtualDostawcaIndex = Dostawcy.SingleOrDefault(e => e.IsVirtual)?.Id;
+         for (int y = 0; y < virtualGrid.Length; y++)
+         {
+            for (int x = 0; x < virtualGrid[0].Length; x++)
+            {
+               if (virtualOdbiorcaIndex == x)
+                  virtualGrid[y][x].IsVirtual = true;
+
+               if (virtualDostawcaIndex == y)
+                  virtualGrid[y][x].IsVirtual = true;
+            }
+         }
+
+         m_userData.SiatkaKosztowJednostkowych = virtualGrid;
+      }
+
       private void AddVirtualInputData()
       {
          var popyt = Odbiorcy.Sum(o => o.Value);
          var podaz = Dostawcy.Sum(o => o.Value);
          if (popyt > podaz)
-            Dostawcy.Add(new InputData(Dostawcy.Count + 1, InputType.Dostawca, popyt - podaz, true));
+         {
+            Dostawcy.Add(new InputData(Dostawcy.Count, InputType.Dostawca, popyt - podaz, true));
+         }
          else
-            Odbiorcy.Add(new InputData(Odbiorcy.Count + 1, InputType.Odbiorca, podaz - popyt, true));
+            Odbiorcy.Add(new InputData(Odbiorcy.Count, InputType.Odbiorca, podaz - popyt, true));
       }
 
 

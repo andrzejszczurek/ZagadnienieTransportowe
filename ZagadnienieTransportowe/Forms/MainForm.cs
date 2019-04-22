@@ -62,12 +62,12 @@ namespace ZagadnienieTransportowe.Forms
                MessageBox.Show(solver.ErrorMessage);
                return;
             }
-            PrepareResultData(solver.Iteracje);
          }
          catch (Exception ex)
          {
             MessageBox.Show($"Podczas rozwiązywania zadania wystąpił błąd: {ex.StackTrace}");
          }
+         PrepareResultData(solver.Iteracje.Where(x => x.IsCorrect).ToList());
       }
 
       private void PrepareResultData(List<Iteration> iteracje)
@@ -207,17 +207,17 @@ namespace ZagadnienieTransportowe.Forms
       {
          int invalidCount = 0;
          foreach (var cell in GridMap)
-            invalidCount += MarkControlifNotValid(cell.Value);
+            invalidCount += MarkControlIfNotValid(cell.Value);
          foreach (var cell in Odbiorcy)
-            invalidCount += MarkControlifNotValid(cell.Value);
+            invalidCount += MarkControlIfNotValid(cell.Value);
          foreach (var cell in Dostawcy)
-            invalidCount += MarkControlifNotValid(cell.Value);
+            invalidCount += MarkControlIfNotValid(cell.Value);
          return invalidCount == 0;
       }
 
       private TabPage GenerateResultTab(Iteration a_iteracja)
       {
-         return GenerateResultTabInternal(Odbiorcy.Count, Dostawcy.Count, a_iteracja);
+         return GenerateResultTabInternal(a_iteracja.DataGrid[0].Length, a_iteracja.DataGrid.Length, a_iteracja);
       }
 
       private TabPage GenerateResultTabInternal(int a_x, int a_y, Iteration a_iteracja)

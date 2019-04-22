@@ -10,10 +10,13 @@
 
       public int? DeltaNiebazowa { get; set; }
 
+      public bool IsVirtual { get; set; }
+
 
       public GridCell(int x, int y)
       {
          Id = y.ToString() + x.ToString();
+         KosztyJednostkowe = 0;
       }
    }
 }

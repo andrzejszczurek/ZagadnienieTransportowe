@@ -41,16 +41,25 @@ namespace App.Core.Solver
          return this;
       }
 
-
       private Cycle FindCycle()
       { 
          var startY = int.Parse(NegativeElementId[0].ToString());
          var startX = int.Parse(NegativeElementId[1].ToString());
          var cycles = new List<Cycle>();
+
+         var maxLengthX = m_grid[0][m_grid[0].Length - 1].IsVirtual ? m_grid[0].Length - 1 : m_grid[0].Length;
+         var maxLengthY = m_grid[m_grid.Length - 1][0].IsVirtual ? m_grid.Length - 1 : m_grid.Length;
+
          for (int i = 1; i < m_grid.Length; i++)
          {
+            if (maxLengthX == i)
+               continue;
+
             for (int j = 1; j < m_grid[i].Length; j++)
             {
+               if (maxLengthY == j)
+                  continue;
+
                #region [Impl]
                var a = new CyclePoint(startY, startX, true);
 
@@ -105,8 +114,8 @@ namespace App.Core.Solver
 
       private string FindLeastElementId()
       {
-         var minEl = m_grid.SelectMany(x => x.Select(v => new { v.Id, v.DeltaNiebazowa }))
-                           .Where(x => x.DeltaNiebazowa != null)
+         var minEl = m_grid.SelectMany(x => x.Select(v => new { v.Id, v.DeltaNiebazowa, v.IsVirtual }))
+                           .Where(x => x.DeltaNiebazowa != null && x.IsVirtual != true)
                            .OrderBy(x => x.DeltaNiebazowa)
                            .FirstOrDefault();
          if (minEl is null)
