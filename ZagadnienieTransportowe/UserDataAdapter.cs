@@ -39,7 +39,7 @@ namespace ZagadnienieTransportowe
          var us_odbiorcy = new List<InputData>();
          foreach (var o in a_odbiorcy)
          {
-            var data = new InputData(o.Key, InputType.Odbiorca, int.Parse(o.Value.Popyt.Text), int.Parse(d.Value.Cena.Text));
+            var data = new InputData(o.Key, InputType.Odbiorca, int.Parse(o.Value.Popyt.Text), int.Parse(o.Value.Cena.Text));
             us_odbiorcy.Add(data);
          }
 
