@@ -14,8 +14,8 @@ namespace ZagadnienieTransportowe
       /// Tworzy dane wejściowe dla solvera na podstawie danych z kontrolek.
       /// </summary>
       internal static UserData Adapt(Dictionary<string, LocalizedTextBox> a_cells
-                                    ,Dictionary<int, LocalizedTextBox> a_odbiorcy
-                                    ,Dictionary<int, LocalizedTextBox> a_dostawcy)
+                                    ,Dictionary<int, (LocalizedTextBox Popyt, LocalizedTextBox Cena)> a_odbiorcy
+                                    ,Dictionary<int, (LocalizedTextBox Podaz, LocalizedTextBox Cena)> a_dostawcy)
       {
          var us_grid = Utility.CreateEmptyCellGrid(a_dostawcy.Count(), a_odbiorcy.Count());
          foreach (var cell in a_cells)
@@ -32,14 +32,14 @@ namespace ZagadnienieTransportowe
          var us_dostawcy = new List<InputData>();
          foreach (var d in a_dostawcy)
          {
-            var data = new InputData(d.Key, InputType.Dostawca, int.Parse(d.Value.Text));
+            var data = new InputData(d.Key, InputType.Dostawca, int.Parse(d.Value.Podaz.Text), int.Parse(d.Value.Cena.Text));
             us_dostawcy.Add(data);
          }
 
          var us_odbiorcy = new List<InputData>();
          foreach (var o in a_odbiorcy)
          {
-            var data = new InputData(o.Key, InputType.Odbiorca, int.Parse(o.Value.Text));
+            var data = new InputData(o.Key, InputType.Odbiorca, int.Parse(o.Value.Popyt.Text), int.Parse(d.Value.Cena.Text));
             us_odbiorcy.Add(data);
          }
 

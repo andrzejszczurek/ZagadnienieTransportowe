@@ -10,6 +10,8 @@
 
       public int? DeltaNiebazowa { get; set; }
 
+      public int? Zysk { get; set; }
+
       public bool IsVirtual { get; set; }
 
 

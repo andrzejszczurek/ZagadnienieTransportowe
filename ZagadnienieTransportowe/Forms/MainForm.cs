@@ -27,8 +27,8 @@ namespace ZagadnienieTransportowe.Forms
       private int _start_Y_Offset;
 
       private readonly Dictionary<string, LocalizedTextBox> GridMap;
-      private readonly Dictionary<int, LocalizedTextBox> Odbiorcy;
-      private readonly Dictionary<int, LocalizedTextBox> Dostawcy;
+      private readonly Dictionary<int, (LocalizedTextBox Popyt, LocalizedTextBox Cena)> Odbiorcy;
+      private readonly Dictionary<int, (LocalizedTextBox Podaz, LocalizedTextBox Cena)> Dostawcy;
       private readonly List<(int Iteracja, List<LocalizedLabel> Labelki)> m_resultLabels;
 
       private const bool IsControlsDebugMode = false;
@@ -40,12 +40,12 @@ namespace ZagadnienieTransportowe.Forms
          _start_Y_Offset = 4 * _offset + 2 * _controlY;
          grid.AutoScroll = true;
          GridMap = new Dictionary<string, LocalizedTextBox>();
-         Odbiorcy = new Dictionary<int, LocalizedTextBox>();
-         Dostawcy = new Dictionary<int, LocalizedTextBox>();
+         Odbiorcy = new Dictionary<int, (LocalizedTextBox Popyt, LocalizedTextBox Cena)>();
+         Dostawcy = new Dictionary<int, (LocalizedTextBox Podaz, LocalizedTextBox Cena)>();
          m_resultLabels = new List<(int Iteracja, List<LocalizedLabel> Labelki)>();
          InitBaseGrid();
          if (IsControlsDebugMode)
-            tabResult.TabPages.Add(GenerateResultTabInternal(5, 5, new Iteration(null, 1)));
+            tabResult.TabPages.Add(GenerateResultTabInternal(5, 5, new IterationKosztyTransportu(null, 1)));
       }
 
       private void ResolveJob()
@@ -70,10 +70,10 @@ namespace ZagadnienieTransportowe.Forms
          PrepareResultData(solver.Iteracje.Where(x => x.IsCorrect).ToList());
       }
 
-      private void PrepareResultData(List<Iteration> iteracje)
+      private void PrepareResultData(List<IterationKosztyTransportu> iteracje)
       {
-         lblBasicCostsResult.Text = iteracje.Single(i => i.Number == 1).KosztyTransportu.ToString();
-         lblOptimalCostResult.Text = iteracje.Single(i => i.Number == iteracje.Count()).KosztyTransportu.ToString();
+         lblBasicCostsResult.Text = iteracje.Single(i => i.Number == 1).IterationResultValue.ToString();
+         lblOptimalCostResult.Text = iteracje.Single(i => i.Number == iteracje.Count()).IterationResultValue.ToString();
 
          foreach (var iteracja in iteracje)
          {
@@ -101,10 +101,16 @@ namespace ZagadnienieTransportowe.Forms
             cell.Value.Text = string.Empty;
 
          foreach (var o in Odbiorcy)
-            o.Value.Text = string.Empty;
+         {
+            o.Value.Popyt.Text = string.Empty;
+            o.Value.Cena.Text = string.Empty;
+         }
 
          foreach (var d in Dostawcy)
-            d.Value.Text = string.Empty;
+         {
+            d.Value.Podaz.Text = string.Empty;
+            d.Value.Cena.Text = string.Empty;
+         }
       }
 
 
@@ -209,18 +215,24 @@ namespace ZagadnienieTransportowe.Forms
          foreach (var cell in GridMap)
             invalidCount += MarkControlIfNotValid(cell.Value);
          foreach (var cell in Odbiorcy)
-            invalidCount += MarkControlIfNotValid(cell.Value);
+         {
+            invalidCount += MarkControlIfNotValid(cell.Value.Popyt);
+            invalidCount += MarkControlIfNotValid(cell.Value.Cena);
+         }
          foreach (var cell in Dostawcy)
-            invalidCount += MarkControlIfNotValid(cell.Value);
+         {
+            invalidCount += MarkControlIfNotValid(cell.Value.Podaz);
+            invalidCount += MarkControlIfNotValid(cell.Value.Cena);
+         }
          return invalidCount == 0;
       }
 
-      private TabPage GenerateResultTab(Iteration a_iteracja)
+      private TabPage GenerateResultTab(IterationKosztyTransportu a_iteracja)
       {
          return GenerateResultTabInternal(a_iteracja.DataGrid[0].Length, a_iteracja.DataGrid.Length, a_iteracja);
       }
 
-      private TabPage GenerateResultTabInternal(int a_x, int a_y, Iteration a_iteracja)
+      private TabPage GenerateResultTabInternal(int a_x, int a_y, IterationKosztyTransportu a_iteracja)
       {
          var tpKey = string.Format(TAB_KEY_PATTERN, a_iteracja.Number);
          var p1Key = $"{tpKey}{COST_PANEL_KEY_PATTERN}";
@@ -253,7 +265,7 @@ namespace ZagadnienieTransportowe.Forms
             lblTable2.BackColor = Color.Red;
          tp.Controls.Add(lblTable2);
 
-         var koszty = IsControlsDebugMode ? "-" : a_iteracja.KosztyTransportu.ToString();
+         var koszty = IsControlsDebugMode ? "-" : a_iteracja.IterationResultValue.ToString();
          var lblKoszty = new Label();
          lblKoszty.Text = $"Koszty transportu: {koszty}";
          lblKoszty.Width = 150;
@@ -369,10 +381,15 @@ namespace ZagadnienieTransportowe.Forms
          foreach (var cell in GridMap)
             cell.Value.ReadOnly = !a_readonly;
          foreach (var cell in Odbiorcy)
-            cell.Value.ReadOnly = !a_readonly;
+         {
+            cell.Value.Popyt.ReadOnly = !a_readonly;
+            cell.Value.Cena.ReadOnly = !a_readonly;
+         }
          foreach (var cell in Dostawcy)
-            cell.Value.ReadOnly = !a_readonly;
-
+         {
+            cell.Value.Podaz.ReadOnly = !a_readonly;
+            cell.Value.Cena.ReadOnly = !a_readonly;
+         }
          btnAddColumn.Enabled = a_readonly;
          btnAddRow.Enabled = a_readonly;
          btnOptimalize.Enabled = a_readonly;
@@ -389,13 +406,19 @@ namespace ZagadnienieTransportowe.Forms
          lblGridError.Visible = false;
          SetInputDataAccess(true);
 
-         var lblPopyt = CreateLabel("Popyt:", 3 * _offset + _controlX, _offset - 1);
+         var lblPopyt = CreateLabel("Popyt:", 2 * (3 * _offset + _controlX), (3 * _offset + _controlY) - 1);
+         var lblKupno = CreateLabel("Buy:", 2 * (3 * _offset + _controlX), _offset - 1);
          lblPopyt.TextAlign = ContentAlignment.MiddleRight;
+         lblKupno.TextAlign = ContentAlignment.MiddleRight;
          grid.Controls.Add(lblPopyt);
+         grid.Controls.Add(lblKupno);
 
-         var lblPodaz = CreateLabel("Podaż:", _offset, 3 * _offset + _controlY);
+         var lblPodaz = CreateLabel("Podaż:", 3 * _offset + _controlX, 2 * (3 * _offset + _controlY));
+         var lblSprzedaz = CreateLabel("Sell:", _offset, 2 * (3 * _offset + _controlY));
          lblPopyt.TextAlign = ContentAlignment.MiddleRight;
+         lblSprzedaz.TextAlign = ContentAlignment.MiddleCenter;
          grid.Controls.Add(lblPodaz);
+         grid.Controls.Add(lblSprzedaz);
          AddDostawca();
          AddOdbiorca();
          AddTbForGridIfNotExist(0, 0);
@@ -405,24 +428,33 @@ namespace ZagadnienieTransportowe.Forms
 
       private void AddDostawca()
       {
-         var y = _start_Y_Offset + _offset + ((2 * _offset + _controlY) * _rowIndex);
-         var tbForPodaz = CreateTextBox(_offset, y);
-         var lblOdbiorcy = CreateLabel($"D{_rowIndex + 1}", 3 * _offset + _controlX, y);
-         Dostawcy[_rowIndex] = tbForPodaz;
+         var y = _start_Y_Offset + _offset + ((2 * _offset + _controlY) * _rowIndex) + 2 * _offset + _controlY;
+         var baseX = 3 * _offset + _controlX;
+
+         var tbForPrice = CreateTextBox(_offset, y);
+         var tbForPodaz = CreateTextBox(baseX, y);
+         var lblOdbiorcy = CreateLabel($"D{_rowIndex + 1}", 2 * baseX, y);
+         Dostawcy[_rowIndex] = (tbForPodaz, tbForPrice);
 
          grid.Controls.Add(tbForPodaz);
+         grid.Controls.Add(tbForPrice);
          grid.Controls.Add(lblOdbiorcy);
       }
 
 
       private void AddOdbiorca()
       {
-         var x = _start_X_Offset + _offset + ((2 * _offset + _controlX) * _columnIndex);
+         var x = _start_X_Offset + _offset + ((2 * _offset + _controlX) * _columnIndex) + 2 * _offset + _controlX;
+         var baseY = 3 * _offset + _controlY;
+
          var tbForPopyt = CreateTextBox(x, _offset);
-         var lblOdbiorcy = CreateLabel($"O{_columnIndex + 1}", x, 3 * _offset + _controlY);
-         Odbiorcy[_columnIndex] = tbForPopyt;
+         var tbForPrice = CreateTextBox(x, baseY);
+
+         var lblOdbiorcy = CreateLabel($"O{_columnIndex + 1}", x, 2 * baseY);
+         Odbiorcy[_columnIndex] = (tbForPopyt, tbForPrice);
 
          grid.Controls.Add(tbForPopyt);
+         grid.Controls.Add(tbForPrice);
          grid.Controls.Add(lblOdbiorcy);
       }
 
@@ -459,13 +491,13 @@ namespace ZagadnienieTransportowe.Forms
 
       public int CalculatePosition_X(int a_columnNumber)
       {
-         var x = _start_X_Offset + _offset + ((2 * _offset + _controlX) * a_columnNumber);
+         var x = _start_X_Offset + _offset + ((2 * _offset + _controlX) * a_columnNumber) + 3 * _offset + _controlX;
          return x;
       }
 
       public int CalculatePosition_Y(int a_rowNumber)
       {
-         var y = _start_Y_Offset + _offset + ((2 * _offset + _controlY) * a_rowNumber);
+         var y = _start_Y_Offset + _offset + ((2 * _offset + _controlY) * a_rowNumber) + 3 * _offset + _controlY;
          return y;
       }
 

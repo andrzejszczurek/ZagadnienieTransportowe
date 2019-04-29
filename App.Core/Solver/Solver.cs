@@ -13,7 +13,7 @@ namespace App.Core.Solver
 
       public List<InputData> Odbiorcy { get; }
 
-      public List<Iteration> Iteracje { get; }
+      public List<IterationKosztyTransportu> Iteracje { get; }
 
       public string ErrorMessage { get; private set; }
 
@@ -21,7 +21,7 @@ namespace App.Core.Solver
 
       public bool OptimalSolutionFound { get; private set; }
 
-      private Iteration m_iteracjaStartowa;
+      private IterationKosztyTransportu m_iteracjaStartowa;
 
       private bool m_isInit;
 
@@ -33,7 +33,7 @@ namespace App.Core.Solver
          m_userData = a_userData;
          Dostawcy = a_userData is null ? new List<InputData>() : m_userData.Dostawcy; // todo: to powinny być kopia pełna 
          Odbiorcy = a_userData is null ? new List<InputData>() : m_userData.Odbiorcy; // todo: to powinny być kopia pełna
-         Iteracje = new List<Iteration>();
+         Iteracje = new List<IterationKosztyTransportu>();
          m_isInit = false;
          m_iterator = 0;
          AttemptsLimit = 10;
@@ -72,7 +72,7 @@ namespace App.Core.Solver
             grid = m_userData.SiatkaKosztowJednostkowych;
          }
 
-         var iteracjaStartowa = new Iteration(grid, ++m_iterator);
+         var iteracjaStartowa = new IterationKosztyTransportu(grid, ++m_iterator);
          m_iteracjaStartowa = iteracjaStartowa;
          Iteracje.Add(iteracjaStartowa);
          m_isInit = true;
@@ -134,7 +134,7 @@ namespace App.Core.Solver
          int? aktualneKoszty = null;
          OptimalSolutionFound = false;
          iteracja.CalculateGridInit(Dostawcy, Odbiorcy);
-         aktualneKoszty = iteracja.KosztyTransportu;
+         aktualneKoszty = iteracja.IterationResultValue;
          while (!OptimalSolutionFound)
          {
             attempt++;
@@ -152,9 +152,9 @@ namespace App.Core.Solver
                continue;
             }
 
-            iteracja = new Iteration(nextStepGrid, ++m_iterator);
-            iteracja.CalculateKosztyTransportu();
-            var zoptymalizowaneKoszty = iteracja.KosztyTransportu;
+            iteracja = new IterationKosztyTransportu(nextStepGrid, ++m_iterator);
+            iteracja.CalculateIterationResult();
+            var zoptymalizowaneKoszty = iteracja.IterationResultValue;
 
             if (aktualneKoszty > zoptymalizowaneKoszty)
             {

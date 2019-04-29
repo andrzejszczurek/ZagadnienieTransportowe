@@ -1,63 +1,19 @@
 ﻿using App.Core.Solver;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace App.Core.Model
 {
-   public class Iteration
+   public class IterationKosztyTransportu : IterationBase
    {
-      public GridCell[][] DataGrid { get; set; }
 
-      public Cycle Cykl { get; private set; }
-
-      public int?[] Alfa { get; private set; }
-
-      public int?[] Beta { get; private set; }
-
-      public int KosztyTransportu { get; set; }
-
-      public bool IsOptimal { get; private set; }
-
-      public (bool IsError, string Message) Error { get; private set; }
-
-      public int Number { get; }
-
-      public bool IsCorrect { get; private set; }
-
-
-      public Iteration(GridCell[][] a_grid, int a_number)
+      public IterationKosztyTransportu(GridCell[][] a_grid, int a_number)
+         : base(a_grid, a_number)
       {
-         Number = a_number;
-         DataGrid = a_grid;
       }
 
-
-      /// <summary>
-      /// Przelicza przydział, współczynniki alfa i beta, delty niebazowe oraz koszty transportu dla siatki
-      /// </summary>
-      public void CalculateGridInit(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
-      {
-         CalculatePrzydzial(a_dostawcy, a_odbiorcy);
-         CalculateGrid(a_dostawcy, a_odbiorcy);
-      }
-
-
-      /// <summary>
-      /// Przelicza współczynniki alfa i beta, delty niebazowe oraz koszty transportu dla siatki
-      /// </summary>
-      public void CalculateGrid(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
-      {
-         CalculateWspolczynnikiAlfaAndBeta();
-         if (Error.IsError)
-            return;
-         CalculateDeltyNiebazowe();
-         CalculateKosztyTransportu();
-      }
-
-      /// <summary>
-      /// Przelicza koszty transportu dla iteracji.
-      /// </summary>
-      public void CalculateKosztyTransportu()
+      public override void CalculateIterationResult()
       {
          int koszty = 0;
          for (int j = 0; j < DataGrid.Length; j++)
@@ -68,14 +24,11 @@ namespace App.Core.Model
                koszty += cell.KosztyJednostkowe * cell.Przydzial ?? 0;
             }
          }
-         KosztyTransportu = koszty;
+         IterationResultValue = koszty;
       }
 
 
-      /// <summary>
-      /// Wyznacza siatkę dla kolejnej iteracji.
-      /// </summary>
-      public GridCell[][] CalculateNextIteration()
+      public override GridCell[][] CalculateNextIteration()
       {
          var cycleDetector = new CycleDetector(DataGrid).Detect();
 
@@ -152,7 +105,7 @@ namespace App.Core.Model
       }
 
 
-      internal void CalculatePrzydzial(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
+      internal override void CalculatePrzydzial(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
       {
          for (int y = 0; y < DataGrid.Length; y++)
          {
@@ -196,7 +149,23 @@ namespace App.Core.Model
       }
 
 
-      private void CalculateWspolczynnikiAlfaAndBeta()
+
+      protected override void CalculateDeltyNiebazowe()
+      {
+         for (int y = 0; y < DataGrid.Length; y++)
+         {
+            for (int x = 0; x < DataGrid[y].Length; x++)
+            {
+               var cell = DataGrid[y][x];
+               if (cell.Przydzial != null)
+                  cell.DeltaNiebazowa = null;
+               else
+                  cell.DeltaNiebazowa = cell.KosztyJednostkowe - Alfa[y] - Beta[x];
+            }
+         }
+      }
+
+      protected override void CalculateWspolczynnikiAlfaAndBeta()
       {
          Alfa = new int?[DataGrid.Length];
          Beta = new int?[DataGrid[0].Length];
@@ -216,7 +185,7 @@ namespace App.Core.Model
                   {
                      Beta[b] = DataGrid[a][b].KosztyJednostkowe - Alfa[a];
                      break;
-                  } 
+                  }
                }
             }
 
@@ -247,19 +216,9 @@ namespace App.Core.Model
       }
 
 
-      private void CalculateDeltyNiebazowe()
+      internal override void CalculateZysk(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
       {
-         for (int y = 0; y < DataGrid.Length; y++)
-         {
-            for (int x = 0; x < DataGrid[y].Length; x++)
-            {
-               var cell = DataGrid[y][x];
-               if (cell.Przydzial != null)
-                  cell.DeltaNiebazowa = null;
-               else
-                  cell.DeltaNiebazowa = cell.KosztyJednostkowe - Alfa[y] - Beta[x];
-            }
-         }
+         throw new NotImplementedException("Dla tego rodzaju iteracji nie jest to wymagane przeliczenie.");
       }
 
    }

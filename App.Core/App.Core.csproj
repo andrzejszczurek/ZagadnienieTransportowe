@@ -45,8 +45,10 @@
     <Compile Include="Model\Cycle.cs" />
     <Compile Include="Model\GridCell.cs" />
     <Compile Include="Model\InputData.cs" />
-    <Compile Include="Model\Iteration.cs" />
+    <Compile Include="Model\IterationKosztyTransportu.cs" />
     <Compile Include="Model\CyclePoint.cs" />
+    <Compile Include="Model\IterationZysk.cs" />
+    <Compile Include="Model\IterationBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Solver\CycleDetector.cs" />
     <Compile Include="Solver\Solver.cs" />

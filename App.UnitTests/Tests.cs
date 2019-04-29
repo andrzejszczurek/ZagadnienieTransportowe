@@ -40,9 +40,9 @@ namespace App.UnitTests
          var iterations = solver.Iteracje;
 
          Assert.AreEqual(3, iterations.Count);
-         Assert.AreEqual(1120, iterations[0].KosztyTransportu);
-         Assert.AreEqual(1050, iterations[1].KosztyTransportu);
-         Assert.AreEqual(970, iterations[2].KosztyTransportu);
+         Assert.AreEqual(1120, iterations[0].IterationResultValue);
+         Assert.AreEqual(1050, iterations[1].IterationResultValue);
+         Assert.AreEqual(970, iterations[2].IterationResultValue);
 
       }
 
@@ -64,7 +64,7 @@ namespace App.UnitTests
          };
 
          var datagrid = Utility.CreateEmptyCellGrid(3, 3);
-         var iteracja = new Iteration(datagrid, 1);
+         var iteracja = new IterationKosztyTransportu(datagrid, 1);
          iteracja.CalculatePrzydzial(dostawcy, odbiorcy);
 
          Assert.AreEqual(20, iteracja.DataGrid[0][0].Przydzial);
@@ -80,6 +80,81 @@ namespace App.UnitTests
          Assert.AreEqual(30, iteracja.DataGrid[2][2].Przydzial);
       }
 
+
+      [TestMethod]
+      public void Calculate_zysk_test()
+      {
+         var odbiorcy = new List<InputData>()
+         {
+            new InputData(0, InputType.Odbiorca, 10, 30),
+            new InputData(1, InputType.Odbiorca, 28, 25),
+            new InputData(2, InputType.Odbiorca, 27, 30),
+         };
+
+         var dostawcy = new List<InputData>()
+         {
+            new InputData(0, InputType.Dostawca, 20, 10),
+            new InputData(1, InputType.Dostawca, 30, 12),
+         };
+
+         var datagrid = Utility.CreateEmptyCellGrid(dostawcy.Count, odbiorcy.Count);
+         datagrid[0][0].KosztyJednostkowe = 8;
+         datagrid[0][1].KosztyJednostkowe = 14;
+         datagrid[0][2].KosztyJednostkowe = 17;
+
+         datagrid[1][0].KosztyJednostkowe = 12;
+         datagrid[1][1].KosztyJednostkowe = 9;
+         datagrid[1][2].KosztyJednostkowe = 19;
+
+         var iteracja = new IterationZysk(datagrid, 1);
+         iteracja.CalculateZysk(dostawcy, odbiorcy);
+
+         Assert.AreEqual(12, iteracja.DataGrid[0][0].Zysk);
+         Assert.AreEqual(1, iteracja.DataGrid[0][1].Zysk);
+         Assert.AreEqual(3, iteracja.DataGrid[0][2].Zysk);
+
+         Assert.AreEqual(6, iteracja.DataGrid[1][0].Zysk);
+         Assert.AreEqual(4, iteracja.DataGrid[1][1].Zysk);
+         Assert.AreEqual(-1, iteracja.DataGrid[1][2].Zysk);
+      }
+
+
+      [TestMethod]
+      public void Calculate_przycial_max_element_macierzy()
+      {
+         var odbiorcy = new List<InputData>()
+         {
+            new InputData(0, InputType.Odbiorca, 10, 30),
+            new InputData(1, InputType.Odbiorca, 28, 25),
+            new InputData(2, InputType.Odbiorca, 27, 30),
+         };
+
+         var dostawcy = new List<InputData>()
+         {
+            new InputData(0, InputType.Dostawca, 20, 10),
+            new InputData(1, InputType.Dostawca, 30, 12),
+         };
+
+         var datagrid = Utility.CreateEmptyCellGrid(dostawcy.Count, odbiorcy.Count);
+         datagrid[0][0].KosztyJednostkowe = 8;
+         datagrid[0][1].KosztyJednostkowe = 14;
+         datagrid[0][2].KosztyJednostkowe = 17;
+
+         datagrid[1][0].KosztyJednostkowe = 12;
+         datagrid[1][1].KosztyJednostkowe = 9;
+         datagrid[1][2].KosztyJednostkowe = 19;
+
+         var iteracja = new IterationZysk(datagrid, 1);
+         iteracja.CalculatePrzydzial(dostawcy, odbiorcy);
+
+         Assert.AreEqual(10, iteracja.DataGrid[0][0].Przydzial);
+         Assert.AreEqual(null, iteracja.DataGrid[0][1].Przydzial);
+         Assert.AreEqual(10, iteracja.DataGrid[0][2].Przydzial);
+
+         Assert.AreEqual(null, iteracja.DataGrid[1][0].Przydzial);
+         Assert.AreEqual(28, iteracja.DataGrid[1][1].Przydzial);
+         Assert.AreEqual(2, iteracja.DataGrid[1][2].Przydzial);
+      }
 
    }
 }
