@@ -30,7 +30,7 @@ namespace App.Core.Model
 
       public override GridCell[][] CalculateNextIteration()
       {
-         var cycleDetector = new CycleDetector(DataGrid).Detect();
+         var cycleDetector = new CycleDetector(DataGrid, CycleDetector.CycleType.Nagative).Detect();
 
          if (cycleDetector.Error.IsError)
          {
@@ -150,7 +150,7 @@ namespace App.Core.Model
 
 
 
-      protected override void CalculateDeltyNiebazowe()
+      internal override void CalculateDeltyNiebazowe()
       {
          for (int y = 0; y < DataGrid.Length; y++)
          {
@@ -165,7 +165,7 @@ namespace App.Core.Model
          }
       }
 
-      protected override void CalculateWspolczynnikiAlfaAndBeta()
+      internal override void CalculateWspolczynnikiAlfaAndBeta()
       {
          Alfa = new int?[DataGrid.Length];
          Beta = new int?[DataGrid[0].Length];

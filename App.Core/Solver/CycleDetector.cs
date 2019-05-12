@@ -7,7 +7,13 @@ namespace App.Core.Solver
 {
    public class CycleDetector
    {
-      public string NegativeElementId { get; private set; }
+      public enum CycleType
+      {
+         Positive,
+         Nagative
+      }
+
+      public string CycleElementId { get; private set; }
 
       public Cycle WyznaczonyCykl { get; private set; }
 
@@ -18,13 +24,15 @@ namespace App.Core.Solver
       private GridCell[][] m_grid;
 
 
-      public CycleDetector(GridCell[][] a_grid)
+      public CycleDetector(GridCell[][] a_grid, CycleType a_cycleType)
       {
          m_grid = a_grid;
-         NegativeElementId = FindLeastElementId();
+         CycleElementId = a_cycleType == CycleType.Nagative 
+                              ? FindLeastElementId() 
+                              : FindMaxElementId();
          if (Error.IsError)
             return;
-         IsOptimal = NegativeElementId is null ? true : false;
+         IsOptimal = CycleElementId is null ? true : false;
       }
 
 
@@ -43,8 +51,8 @@ namespace App.Core.Solver
 
       private Cycle FindCycle()
       { 
-         var startY = int.Parse(NegativeElementId[0].ToString());
-         var startX = int.Parse(NegativeElementId[1].ToString());
+         var startY = int.Parse(CycleElementId[0].ToString());
+         var startX = int.Parse(CycleElementId[1].ToString());
          var cycles = new List<Cycle>();
 
          var maxLengthX = m_grid[0][m_grid[0].Length - 1].IsVirtual ? m_grid[0].Length - 1 : m_grid[0].Length;
@@ -98,7 +106,7 @@ namespace App.Core.Solver
          for (int i = 0; i < cycles.Count; i++)
          {
             var cycleToExamine = cycles[i];
-            if (IsCycleCorrect(cycleToExamine, NegativeElementId))
+            if (IsCycleCorrect(cycleToExamine, CycleElementId))
                correctCycles.Add(cycles[i]);
          }
 
@@ -111,6 +119,25 @@ namespace App.Core.Solver
          return null;
       }
 
+
+      private string FindMaxElementId()
+      {
+         var maxEl = m_grid.SelectMany(x => x.Select(v => new { v.Id, v.DeltaNiebazowa }))
+                           .Where(x => x.DeltaNiebazowa != null )
+                           .OrderByDescending(x => x.DeltaNiebazowa)
+                           .FirstOrDefault();
+
+         if (maxEl is null)
+         {
+            Error = (true, "Nie udało się określić punktu początkowego dla cyklu. Zweryfikuj dane wejściowe.");
+            return null;
+         }
+
+         if (maxEl.DeltaNiebazowa <= 0)
+            return null;
+
+         return maxEl.Id;
+      }
 
       private string FindLeastElementId()
       {

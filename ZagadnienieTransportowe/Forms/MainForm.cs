@@ -17,8 +17,8 @@ namespace ZagadnienieTransportowe.Forms
 
       private int _columnIndex = 0;
       private int _rowIndex = 0;
-      private int _maxAvailableRows = 5;
-      private int _maxAvailableColumns = 5;
+      private int _maxAvailableRows = 8;
+      private int _maxAvailableColumns = 6;
 
       private int _offset = 1;
       private int _controlY = 20;

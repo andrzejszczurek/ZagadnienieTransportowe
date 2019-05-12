@@ -42,27 +42,28 @@
          this.label2 = new System.Windows.Forms.Label();
          this.lblBasicCostsResult = new System.Windows.Forms.Label();
          this.lblOptimalCostResult = new System.Windows.Forms.Label();
+         this.grid.SuspendLayout();
          this.gbInputData.SuspendLayout();
          this.grResults.SuspendLayout();
          this.SuspendLayout();
          // 
          // btnAddColumn
          // 
-         this.btnAddColumn.Location = new System.Drawing.Point(81, 19);
+         this.btnAddColumn.Location = new System.Drawing.Point(53, 1);
          this.btnAddColumn.Name = "btnAddColumn";
-         this.btnAddColumn.Size = new System.Drawing.Size(77, 45);
+         this.btnAddColumn.Size = new System.Drawing.Size(50, 40);
          this.btnAddColumn.TabIndex = 0;
-         this.btnAddColumn.Text = "Nowy odbiorca";
+         this.btnAddColumn.Text = "O++";
          this.btnAddColumn.UseVisualStyleBackColor = true;
          this.btnAddColumn.Click += new System.EventHandler(this.BtnAddColumnClicked);
          // 
          // btnAddRow
          // 
-         this.btnAddRow.Location = new System.Drawing.Point(6, 69);
+         this.btnAddRow.Location = new System.Drawing.Point(1, 1);
          this.btnAddRow.Name = "btnAddRow";
-         this.btnAddRow.Size = new System.Drawing.Size(69, 45);
+         this.btnAddRow.Size = new System.Drawing.Size(50, 40);
          this.btnAddRow.TabIndex = 0;
-         this.btnAddRow.Text = "Nowy dostawca";
+         this.btnAddRow.Text = "D++";
          this.btnAddRow.UseVisualStyleBackColor = true;
          this.btnAddRow.Click += new System.EventHandler(this.BtnAddRowClicked);
          // 
@@ -72,9 +73,11 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
          this.grid.AutoScroll = true;
-         this.grid.Location = new System.Drawing.Point(81, 70);
+         this.grid.Controls.Add(this.btnAddRow);
+         this.grid.Controls.Add(this.btnAddColumn);
+         this.grid.Location = new System.Drawing.Point(6, 19);
          this.grid.Name = "grid";
-         this.grid.Size = new System.Drawing.Size(400, 246);
+         this.grid.Size = new System.Drawing.Size(475, 271);
          this.grid.TabIndex = 1;
          // 
          // gbInputData
@@ -84,8 +87,6 @@
             | System.Windows.Forms.AnchorStyles.Right)));
          this.gbInputData.Controls.Add(this.lblGridError);
          this.gbInputData.Controls.Add(this.grid);
-         this.gbInputData.Controls.Add(this.btnAddColumn);
-         this.gbInputData.Controls.Add(this.btnAddRow);
          this.gbInputData.Location = new System.Drawing.Point(12, 58);
          this.gbInputData.Name = "gbInputData";
          this.gbInputData.Size = new System.Drawing.Size(488, 325);
@@ -97,9 +98,9 @@
          // 
          this.lblGridError.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
          this.lblGridError.ForeColor = System.Drawing.Color.Maroon;
-         this.lblGridError.Location = new System.Drawing.Point(182, 19);
+         this.lblGridError.Location = new System.Drawing.Point(5, 293);
          this.lblGridError.Name = "lblGridError";
-         this.lblGridError.Size = new System.Drawing.Size(265, 41);
+         this.lblGridError.Size = new System.Drawing.Size(476, 23);
          this.lblGridError.TabIndex = 2;
          this.lblGridError.Text = "Tabela z danymi wejściowymi zawiera błędy. Popraw je i spróbuj ponownie";
          // 
@@ -214,6 +215,7 @@
          this.Controls.Add(this.gbInputData);
          this.Name = "MainForm";
          this.Text = "Zagadmienie transportowe";
+         this.grid.ResumeLayout(false);
          this.gbInputData.ResumeLayout(false);
          this.grResults.ResumeLayout(false);
          this.ResumeLayout(false);

@@ -34,9 +34,9 @@ namespace App.Core.Model
 
       internal abstract void CalculateZysk(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy);
 
-      protected abstract void CalculateWspolczynnikiAlfaAndBeta();
+      internal abstract void CalculateWspolczynnikiAlfaAndBeta();
 
-      protected abstract void CalculateDeltyNiebazowe();
+      internal abstract void CalculateDeltyNiebazowe();
 
 
       /// <summary>
@@ -56,6 +56,7 @@ namespace App.Core.Model
       public void CalculateGridInit(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
       {
          CalculatePrzydzial(a_dostawcy, a_odbiorcy);
+         CalculateZysk(a_dostawcy, a_odbiorcy); // todo dla pierwszego projektu
          CalculateGrid(a_dostawcy, a_odbiorcy);
       }
 
