@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using ZagadnienieTransportowe.Controls;
+using static App.Core.Solver.Solver;
 
 namespace ZagadnienieTransportowe.Forms
 {
@@ -33,6 +34,8 @@ namespace ZagadnienieTransportowe.Forms
 
       private const bool IsControlsDebugMode = false;
 
+      private JobType m_jt = JobType.Zysk;
+
       public MainForm()
       {
          InitializeComponent();
@@ -52,11 +55,11 @@ namespace ZagadnienieTransportowe.Forms
       {
          var userData = UserDataAdapter.Adapt(GridMap, Odbiorcy, Dostawcy);
          var solver = new Solver(userData);
-         solver.Init();
+         solver.Init(m_jt);
 
          try
          {
-            solver.Resolve();
+            solver.Resolve(m_jt);
             if (!solver.OptimalSolutionFound)
             {
                MessageBox.Show(solver.ErrorMessage);
@@ -70,9 +73,9 @@ namespace ZagadnienieTransportowe.Forms
          PrepareResultData(solver.Iteracje.Where(x => x.IsCorrect).ToList());
       }
 
-      private void PrepareResultData(List<IterationKosztyTransportu> iteracje)
+      private void PrepareResultData(List<IterationBase> iteracje)
       {
-         lblBasicCostsResult.Text = iteracje.Single(i => i.Number == 1).IterationResultValue.ToString();
+         lblBasicCostsResult.Text = iteracje.Single(i => i.Number == 1)?.IterationResultValue.ToString();
          lblOptimalCostResult.Text = iteracje.Single(i => i.Number == iteracje.Count()).IterationResultValue.ToString();
 
          foreach (var iteracja in iteracje)
@@ -227,12 +230,12 @@ namespace ZagadnienieTransportowe.Forms
          return invalidCount == 0;
       }
 
-      private TabPage GenerateResultTab(IterationKosztyTransportu a_iteracja)
+      private TabPage GenerateResultTab(IterationBase a_iteracja)
       {
          return GenerateResultTabInternal(a_iteracja.DataGrid[0].Length, a_iteracja.DataGrid.Length, a_iteracja);
       }
 
-      private TabPage GenerateResultTabInternal(int a_x, int a_y, IterationKosztyTransportu a_iteracja)
+      private TabPage GenerateResultTabInternal(int a_x, int a_y, IterationBase a_iteracja)
       {
          var tpKey = string.Format(TAB_KEY_PATTERN, a_iteracja.Number);
          var p1Key = $"{tpKey}{COST_PANEL_KEY_PATTERN}";
@@ -447,8 +450,8 @@ namespace ZagadnienieTransportowe.Forms
          var x = _start_X_Offset + _offset + ((2 * _offset + _controlX) * _columnIndex) + 2 * _offset + _controlX;
          var baseY = 3 * _offset + _controlY;
 
-         var tbForPopyt = CreateTextBox(x, _offset);
-         var tbForPrice = CreateTextBox(x, baseY);
+         var tbForPopyt = CreateTextBox(x, baseY);
+         var tbForPrice = CreateTextBox(x, _offset);
 
          var lblOdbiorcy = CreateLabel($"O{_columnIndex + 1}", x, 2 * baseY);
          Odbiorcy[_columnIndex] = (tbForPopyt, tbForPrice);

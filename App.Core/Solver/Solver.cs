@@ -13,7 +13,7 @@ namespace App.Core.Solver
 
       public List<InputData> Odbiorcy { get; }
 
-      public List<IterationKosztyTransportu> Iteracje { get; }
+      public List<IterationBase> Iteracje { get; }
 
       public string ErrorMessage { get; private set; }
 
@@ -21,11 +21,17 @@ namespace App.Core.Solver
 
       public bool OptimalSolutionFound { get; private set; }
 
-      private IterationKosztyTransportu m_iteracjaStartowa;
+      private IterationBase m_iteracjaStartowa;
 
       private bool m_isInit;
 
       private int m_iterator;
+
+      public enum JobType
+      {
+         KosztyTransportu,
+         Zysk
+      }
 
 
       public Solver(UserData a_userData)
@@ -33,7 +39,7 @@ namespace App.Core.Solver
          m_userData = a_userData;
          Dostawcy = a_userData is null ? new List<InputData>() : m_userData.Dostawcy; // todo: to powinny być kopia pełna 
          Odbiorcy = a_userData is null ? new List<InputData>() : m_userData.Odbiorcy; // todo: to powinny być kopia pełna
-         Iteracje = new List<IterationKosztyTransportu>();
+         Iteracje = new List<IterationBase>();
          m_isInit = false;
          m_iterator = 0;
          AttemptsLimit = 10;
@@ -46,36 +52,53 @@ namespace App.Core.Solver
       /// po wykonaniu Init należy dodać koszty.
       /// Po wykonaniu Init, brak możliwości definiowania dostawców i odbiorców.
       /// </summary>
-      public void Init()
+      public void Init(JobType a_jobType)
       {
+         IterationBase iteracjaStartowa = null;
          var isUserDataSet = !(m_userData is null);
 
          if (!isUserDataSet && (Dostawcy.Count < 1 || Odbiorcy.Count < 1))
             throw new Exception("Przed zainicjowaniem solvera należy dodać conajmniej jednego dostawce oraz odbiorcę.");
 
-
-         var isBalaced = IsBalanced();
-         if (!isBalaced)
-         {
-            AddVirtualInputData();
-            //OptimalSolutionFound = false;
-            //ErrorMessage = "Zadanie nie jest zbilansowane. Brak wsparcia dla tego typu danych.";
-            //return;
-         }
          GridCell[][] grid = isUserDataSet
-                              ? m_userData.SiatkaKosztowJednostkowych
-                              : Utility.CreateEmptyCellGrid(Dostawcy.Count, Odbiorcy.Count);
+                     ? m_userData.SiatkaKosztowJednostkowych
+                     : Utility.CreateEmptyCellGrid(Dostawcy.Count, Odbiorcy.Count);
 
-         if (!isBalaced && isUserDataSet)
+         if (a_jobType == JobType.KosztyTransportu)
          {
+
+            var isBalaced = IsBalanced();
+            if (!isBalaced)
+            {
+               AddVirtualInputData();
+               //OptimalSolutionFound = false;
+               //ErrorMessage = "Zadanie nie jest zbilansowane. Brak wsparcia dla tego typu danych.";
+               //return;
+            }
+
+            if (!isBalaced && isUserDataSet)
+            {
+               RecalculateDataGrid();
+               grid = m_userData.SiatkaKosztowJednostkowych;
+            }
+            iteracjaStartowa = new IterationKosztyTransportu(grid, ++m_iterator);
+         }
+
+         if (a_jobType == JobType.Zysk)
+         {
+            var (vDostawca, vOdbiorca) = IterationZysk.CreateVirtualInputData(Dostawcy, Odbiorcy);
+            Dostawcy.Add(vDostawca);
+            Odbiorcy.Add(vOdbiorca);
             RecalculateDataGrid();
             grid = m_userData.SiatkaKosztowJednostkowych;
+            iteracjaStartowa = new IterationZysk(grid, ++m_iterator);
          }
 
-         var iteracjaStartowa = new IterationKosztyTransportu(grid, ++m_iterator);
+
          m_iteracjaStartowa = iteracjaStartowa;
          Iteracje.Add(iteracjaStartowa);
          m_isInit = true;
+
       }
 
       private void RecalculateDataGrid()
@@ -125,16 +148,18 @@ namespace App.Core.Solver
       /// <summary>
       /// Rozwiązuje zadanie w iteraciach.
       /// </summary>
-      public void Resolve()
+      public void Resolve(JobType a_jobType)
       {
          CanByResolve();
 
          var attempt = 0;
-         var iteracja = m_iteracjaStartowa;
-         int? aktualneKoszty = null;
+         IterationBase iteracja = m_iteracjaStartowa;
+         int? aktulaneWartoscOptymalna = null;
          OptimalSolutionFound = false;
+
          iteracja.CalculateGridInit(Dostawcy, Odbiorcy);
-         aktualneKoszty = iteracja.IterationResultValue;
+         aktulaneWartoscOptymalna = iteracja.IterationResultValue;
+
          while (!OptimalSolutionFound)
          {
             attempt++;
@@ -152,13 +177,20 @@ namespace App.Core.Solver
                continue;
             }
 
-            iteracja = new IterationKosztyTransportu(nextStepGrid, ++m_iterator);
-            iteracja.CalculateIterationResult();
-            var zoptymalizowaneKoszty = iteracja.IterationResultValue;
+            iteracja = a_jobType == JobType.KosztyTransportu
+                              ? (IterationBase)new IterationKosztyTransportu(nextStepGrid, ++m_iterator)
+                              : (IterationBase)new IterationZysk(nextStepGrid, ++m_iterator);
 
-            if (aktualneKoszty > zoptymalizowaneKoszty)
+            iteracja.CalculateIterationResult();
+            var zoptymalizowaneWartosc = iteracja.IterationResultValue;
+
+            var express = a_jobType == JobType.KosztyTransportu
+                                    ? aktulaneWartoscOptymalna > zoptymalizowaneWartosc
+                                    : aktulaneWartoscOptymalna < zoptymalizowaneWartosc;
+
+            if (express)
             {
-               aktualneKoszty = zoptymalizowaneKoszty;
+               aktulaneWartoscOptymalna = zoptymalizowaneWartosc;
                Iteracje.Add(iteracja);
                iteracja.CalculateGrid(Dostawcy, Odbiorcy);
 

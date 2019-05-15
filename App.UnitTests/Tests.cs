@@ -22,7 +22,7 @@ namespace App.UnitTests
          solver.AddOdbiorca(40);
          solver.AddOdbiorca(90);
 
-         solver.Init();
+         solver.Init(Solver.JobType.KosztyTransportu);
 
          solver.AddKosztyJednostkowe(0, 0, 3);
          solver.AddKosztyJednostkowe(0, 1, 5);
@@ -36,7 +36,7 @@ namespace App.UnitTests
          solver.AddKosztyJednostkowe(2, 1, 3);
          solver.AddKosztyJednostkowe(2, 2, 9);
 
-         solver.Resolve();
+         solver.Resolve(Solver.JobType.KosztyTransportu);
 
          var iterations = solver.Iteracje;
 
@@ -45,6 +45,41 @@ namespace App.UnitTests
          Assert.AreEqual(1050, iterations[1].IterationResultValue);
          Assert.AreEqual(970, iterations[2].IterationResultValue);
 
+      }
+
+      [TestMethod]
+      public void SolveJob_2()
+      {
+         var odbiorcy = new List<InputData>()
+         {
+            new InputData(0, InputType.Odbiorca, 10, 30),
+            new InputData(1, InputType.Odbiorca, 28, 25),
+            new InputData(2, InputType.Odbiorca, 27, 30),
+         };
+
+         var dostawcy = new List<InputData>()
+         {
+            new InputData(0, InputType.Dostawca, 20, 10),
+            new InputData(1, InputType.Dostawca, 30, 12),
+         };
+
+         var datagrid = Utility.CreateEmptyCellGrid(dostawcy.Count, odbiorcy.Count);
+         datagrid[0][0].KosztyJednostkowe = 8;
+         datagrid[0][1].KosztyJednostkowe = 14;
+         datagrid[0][2].KosztyJednostkowe = 17;
+
+         datagrid[1][0].KosztyJednostkowe = 12;
+         datagrid[1][1].KosztyJednostkowe = 9;
+         datagrid[1][2].KosztyJednostkowe = 19;
+
+         var userData = new UserData(datagrid, dostawcy, odbiorcy);
+         var solver = new Solver(userData);
+         solver.Init(Solver.JobType.Zysk);
+         solver.Resolve(Solver.JobType.Zysk);
+
+         var iteracje = solver.Iteracje;
+
+         Assert.AreEqual(iteracje[0].IterationResultValue, 260);
       }
 
       [TestMethod]

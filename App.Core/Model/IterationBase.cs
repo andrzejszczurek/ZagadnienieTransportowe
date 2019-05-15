@@ -55,8 +55,8 @@ namespace App.Core.Model
       /// </summary>
       public void CalculateGridInit(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
       {
-         CalculatePrzydzial(a_dostawcy, a_odbiorcy);
          CalculateZysk(a_dostawcy, a_odbiorcy); // todo dla pierwszego projektu
+         CalculatePrzydzial(a_dostawcy, a_odbiorcy);
          CalculateGrid(a_dostawcy, a_odbiorcy);
       }
 

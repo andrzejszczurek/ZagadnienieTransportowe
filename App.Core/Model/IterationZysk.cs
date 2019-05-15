@@ -263,13 +263,13 @@ namespace App.Core.Model
       }
 
 
-      public (InputData Dostawca, InputData Odbiorca) CreateVirtualInputData(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
+      public static (InputData Dostawca, InputData Odbiorca) CreateVirtualInputData(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
       {
-         var popyt = a_odbiorcy.Sum(o => o.Value);
-         var podaz = a_dostawcy.Sum(o => o.Value);
+         var popyt = a_dostawcy.Sum(o => o.Value);
+         var podaz = a_odbiorcy.Sum(o => o.Value);
 
          var virtualOdbiorca = new InputData(a_odbiorcy.Count(), InputType.Odbiorca, popyt, 0, true);
-         var virtualDostawca = new InputData(a_odbiorcy.Count(), InputType.Odbiorca, podaz, 0, true);
+         var virtualDostawca = new InputData(a_dostawcy.Count(), InputType.Odbiorca, podaz, 0, true);
 
          return (virtualDostawca, virtualOdbiorca);
       }
