@@ -1,11 +1,7 @@
-﻿namespace App.Core.Model
-{
-   public enum InputType
-   {
-      Dostawca,
-      Odbiorca
-   }
+﻿using App.Core.Enums;
 
+namespace App.Core.Model
+{ 
 
    public class InputData
    {
@@ -33,11 +29,13 @@
 
       }
 
+
       public InputData(int a_id, InputType a_inputType, int a_value, int a_price)
          : this(a_id, a_inputType, a_value, a_price, false)
       {
 
       }
+
 
       public InputData(int a_id, InputType a_inputType, int a_value, int? a_price, bool a_isVirtual)
       {

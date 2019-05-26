@@ -1,6 +1,9 @@
 ﻿using App.Core;
+using App.Core.Adapters;
+using App.Core.Enums;
 using App.Core.Model;
 using App.Core.Solver;
+using App.Core.Solver.CycleProvider;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +25,7 @@ namespace App.UnitTests
          solver.AddOdbiorca(40);
          solver.AddOdbiorca(90);
 
-         solver.Init(Solver.JobType.KosztyTransportu);
+         solver.Init(JobType.TransportCosts);
 
          solver.AddKosztyJednostkowe(0, 0, 3);
          solver.AddKosztyJednostkowe(0, 1, 5);
@@ -36,9 +39,9 @@ namespace App.UnitTests
          solver.AddKosztyJednostkowe(2, 1, 3);
          solver.AddKosztyJednostkowe(2, 2, 9);
 
-         solver.Resolve(Solver.JobType.KosztyTransportu);
+         solver.Resolve(JobType.TransportCosts);
 
-         var iterations = solver.Iteracje;
+         var iterations = solver.Iterations;
 
          Assert.AreEqual(3, iterations.Count);
          Assert.AreEqual(1120, iterations[0].IterationResultValue);
@@ -74,10 +77,10 @@ namespace App.UnitTests
 
          var userData = new UserData(datagrid, dostawcy, odbiorcy);
          var solver = new Solver(userData);
-         solver.Init(Solver.JobType.Zysk);
-         solver.Resolve(Solver.JobType.Zysk);
+         solver.Init(JobType.Profit);
+         solver.Resolve(JobType.Profit);
 
-         var iteracje = solver.Iteracje;
+         var iteracje = solver.Iterations;
 
          Assert.AreEqual(iteracje[0].IterationResultValue, 260);
       }
@@ -100,7 +103,7 @@ namespace App.UnitTests
          };
 
          var datagrid = Utility.CreateEmptyCellGrid(3, 3);
-         var iteracja = new IterationKosztyTransportu(datagrid, 1);
+         var iteracja = new IterationTransportCosts(datagrid, JobType.Profit, 1);
          iteracja.CalculatePrzydzial(dostawcy, odbiorcy);
 
          Assert.AreEqual(20, iteracja.DataGrid[0][0].Przydzial);
@@ -142,7 +145,7 @@ namespace App.UnitTests
          datagrid[1][1].KosztyJednostkowe = 9;
          datagrid[1][2].KosztyJednostkowe = 19;
 
-         var iteracja = new IterationZysk(datagrid, 1);
+         var iteracja = new IterationProfit(datagrid, JobType.Profit, 1);
          iteracja.CalculateZysk(dostawcy, odbiorcy);
 
          Assert.AreEqual(12, iteracja.DataGrid[0][0].Zysk);
@@ -192,7 +195,7 @@ namespace App.UnitTests
          datagrid[2][2].IsVirtual = true;
 
 
-         var iteracja = new IterationZysk(datagrid, 1);
+         var iteracja = new IterationProfit(datagrid, JobType.Profit, 1);
          iteracja.CalculateZysk(dostawcy, odbiorcy);
          iteracja.CalculatePrzydzial(dostawcy, odbiorcy);
 
@@ -250,14 +253,14 @@ namespace App.UnitTests
          datagrid[2][2].IsVirtual = true;
 
 
-         var iteracja = new IterationZysk(datagrid, 1);
+         var iteracja = new IterationProfit(datagrid, JobType.Profit, 1);
          iteracja.CalculateZysk(dostawcy, odbiorcy);
          iteracja.CalculatePrzydzial(dostawcy, odbiorcy);
          iteracja.CalculateWspolczynnikiAlfaAndBeta();
 
-         Assert.AreEqual(0, iteracja.Alfa[0].Value);
-         Assert.AreEqual(-4, iteracja.Alfa[1].Value);
-         Assert.AreEqual(-3, iteracja.Alfa[2].Value);
+         Assert.AreEqual(0, iteracja.Alpha[0].Value);
+         Assert.AreEqual(-4, iteracja.Alpha[1].Value);
+         Assert.AreEqual(-3, iteracja.Alpha[2].Value);
 
          Assert.AreEqual(12, iteracja.Beta[0].Value);
          Assert.AreEqual(8, iteracja.Beta[1].Value);
@@ -302,7 +305,7 @@ namespace App.UnitTests
          datagrid[2][2].IsVirtual = true;
 
 
-         var iteracja = new IterationZysk(datagrid, 1);
+         var iteracja = new IterationProfit(datagrid, JobType.Profit, 1);
          iteracja.CalculateZysk(dostawcy, odbiorcy);
          iteracja.CalculatePrzydzial(dostawcy, odbiorcy);
          iteracja.CalculateIterationResult();
@@ -345,7 +348,7 @@ namespace App.UnitTests
          datagrid[2][1].IsVirtual = true;
          datagrid[2][2].IsVirtual = true;
 
-         var iteracja = new IterationZysk(datagrid, 1);
+         var iteracja = new IterationProfit(datagrid, JobType.Profit, 1);
          iteracja.CalculateZysk(dostawcy, odbiorcy);
          iteracja.CalculatePrzydzial(dostawcy, odbiorcy);
          iteracja.CalculateWspolczynnikiAlfaAndBeta();
@@ -404,13 +407,13 @@ namespace App.UnitTests
          datagrid[2][1].IsVirtual = true;
          datagrid[2][2].IsVirtual = true;
 
-         var iteracja = new IterationZysk(datagrid, 1);
+         var iteracja = new IterationProfit(datagrid, JobType.Profit, 1);
          iteracja.CalculateZysk(dostawcy, odbiorcy);
          iteracja.CalculatePrzydzial(dostawcy, odbiorcy);
          iteracja.CalculateWspolczynnikiAlfaAndBeta();
          iteracja.CalculateDeltyNiebazowe();
 
-         var cycleDetector = new CycleDetector(iteracja.DataGrid, CycleDetector.CycleType.Positive).Detect();
+         var cycleDetector = new CycleDetector(iteracja.DataGrid, CycleBaseType.Maximizing).Detect();
          var points = cycleDetector.WyznaczonyCykl.ToPointsList();
          var expectedPoints = new string[] { "13", "12", "22", "23" }.ToList();
 
@@ -458,7 +461,7 @@ namespace App.UnitTests
          datagrid[2][1].IsVirtual = true;
          datagrid[2][2].IsVirtual = true;
 
-         var iteracja = new IterationZysk(datagrid, 1);
+         var iteracja = new IterationProfit(datagrid, JobType.Profit, 1);
          iteracja.CalculateZysk(dostawcy, odbiorcy);
          iteracja.CalculatePrzydzial(dostawcy, odbiorcy);
          iteracja.CalculateWspolczynnikiAlfaAndBeta();

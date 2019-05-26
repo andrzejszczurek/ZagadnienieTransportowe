@@ -4,19 +4,20 @@ namespace App.Core
 {
    public static class Utility
    {
+
+      public static GridCell[][] CreateEmptyCellGrid(int a_rows, int a_columns)
+      {
+         var grid = Init2DimmArray<GridCell>(a_columns, a_rows);
+         return InitCellGrid(grid);
+      }
+
+
       public static T[][] Init2DimmArray<T>(int x, int y)
       {
          var arr = new T[y][];
          for (int i = 0; i < arr.Length; i++)
             arr[i] = new T[x];
          return arr;
-      }
-
-
-      public static GridCell[][] CreateEmptyCellGrid(int a_dostawcyCount, int a_odbiorcyCount)
-      {
-         var grid = Init2DimmArray<GridCell>(a_odbiorcyCount, a_dostawcyCount);
-         return InitCellGrid(grid);
       }
 
 

@@ -1,4 +1,4 @@
-﻿using App.Core.Model;
+﻿using App.Core.Enums;
 using App.Core.Solver;
 using System;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using ZagadnienieTransportowe.Controls;
-using static App.Core.Solver.Solver;
+using ZagadnienieTransportowe.DataAdapter;
 
 namespace ZagadnienieTransportowe.Forms
 {
@@ -34,7 +34,7 @@ namespace ZagadnienieTransportowe.Forms
 
       private const bool IsControlsDebugMode = false;
 
-      private JobType m_jt = JobType.Zysk;
+      private JobType m_jt = JobType.Profit;
 
       public MainForm()
       {
@@ -48,12 +48,13 @@ namespace ZagadnienieTransportowe.Forms
          m_resultLabels = new List<(int Iteracja, List<LocalizedLabel> Labelki)>();
          InitBaseGrid();
          if (IsControlsDebugMode)
-            tabResult.TabPages.Add(GenerateResultTabInternal(5, 5, new IterationKosztyTransportu(null, 1)));
+            tabResult.TabPages.Add(GenerateResultTabInternal(5, 5, new IterationTransportCosts(null, JobType.TransportCosts, 1)));
       }
 
       private void ResolveJob()
       {
-         var userData = UserDataAdapter.Adapt(GridMap, Odbiorcy, Dostawcy);
+         var gridData = new UserDataGridDefinition() { Cells = GridMap, Odbiorcy = this.Odbiorcy, Dostawcy = this.Dostawcy };
+         var userData = new UserDataAdapter().Adapt(gridData);
          var solver = new Solver(userData);
          solver.Init(m_jt);
 
@@ -70,7 +71,7 @@ namespace ZagadnienieTransportowe.Forms
          {
             MessageBox.Show($"Podczas rozwiązywania zadania wystąpił błąd: {ex.StackTrace}");
          }
-         PrepareResultData(solver.Iteracje.Where(x => x.IsCorrect).ToList());
+         PrepareResultData(solver.Iterations.Where(x => x.IsCorrect).ToList());
       }
 
       private void PrepareResultData(List<IterationBase> iteracje)
@@ -310,7 +311,7 @@ namespace ZagadnienieTransportowe.Forms
          var cell_height = 2 * offset + lbl_height;
 
          var cellGrid = a_iteracja.DataGrid;
-         var cyklPoints = a_iteracja.Cykl?.ToPointsList();
+         var cyklPoints = a_iteracja.Cycle?.ToPointsList();
          // labelki informacyjne dostawcy
          for (int y = 0; y < a_y; y++)
          {
@@ -342,7 +343,7 @@ namespace ZagadnienieTransportowe.Forms
                {
                   if (cyclePoint.IsStart)
                      cellLbl2.BackColor = Color.FromArgb(65, 148, 181);
-                  else if (cyclePoint.Type == CyclePoint.CyclePointType.CyklDodatni)
+                  else if (cyclePoint.Type == CyclePointType.Positive)
                      cellLbl2.BackColor = Color.FromArgb(50, 130, 46);
                   else
                      cellLbl2.BackColor = Color.FromArgb(211, 88, 88);

@@ -1,15 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using App.Core.Enums;
+using App.Core.Model;
+using App.Core.Solver.CycleProvider;
+using System.Collections.Generic;
 
-namespace App.Core.Model
+namespace App.Core.Solver
 {
    public abstract class IterationBase
    {
+      public JobType JobType { get; set; }
 
       public GridCell[][] DataGrid { get; set; }
 
-      public Cycle Cykl { get; protected set; }
+      public Cycle Cycle { get; protected set; }
 
-      public int?[] Alfa { get; protected set; }
+      public int?[] Alpha { get; protected set; }
 
       public int?[] Beta { get; protected set; }
 
@@ -24,10 +28,11 @@ namespace App.Core.Model
       public bool IsCorrect { get; protected set; }
 
 
-      protected IterationBase(GridCell[][] a_grid, int a_number)
+      protected IterationBase(GridCell[][] a_grid, JobType a_jobType, int a_number)
       {
          DataGrid = a_grid;
          Number = a_number;
+         JobType = a_jobType;
       }
 
       internal abstract void CalculatePrzydzial(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy);
@@ -50,20 +55,23 @@ namespace App.Core.Model
       /// </summary>
       public abstract GridCell[][] CalculateNextIteration();
 
+
       /// <summary>
-      /// Przelicza przydział, współczynniki alfa i beta, delty niebazowe oraz koszty transportu dla siatki
+      /// Przelicza przydział, współczynniki alfa i beta, delty niebazowe oraz zoptymalizowany wynik dla siatki
       /// </summary>
       public void CalculateGridInit(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
       {
-         CalculateZysk(a_dostawcy, a_odbiorcy); // todo dla pierwszego projektu
+         if (JobType == JobType.Profit)
+            CalculateZysk(a_dostawcy, a_odbiorcy);
          CalculatePrzydzial(a_dostawcy, a_odbiorcy);
          CalculateGrid(a_dostawcy, a_odbiorcy);
       }
 
+
       /// <summary>
       /// Przelicza współczynniki alfa i beta, delty niebazowe oraz koszty transportu dla siatki
       /// </summary>
-      public virtual void CalculateGrid(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
+      public void CalculateGrid(IEnumerable<InputData> a_dostawcy, IEnumerable<InputData> a_odbiorcy)
       {
          CalculateWspolczynnikiAlfaAndBeta();
          if (Error.IsError)
@@ -71,7 +79,6 @@ namespace App.Core.Model
          CalculateDeltyNiebazowe();
          CalculateIterationResult();
       }
-
 
    }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace App.Core.Model
+namespace App.Core.Solver.CycleProvider
 {
    public class Cycle
    {

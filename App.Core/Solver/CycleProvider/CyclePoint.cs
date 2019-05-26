@@ -1,16 +1,10 @@
-﻿using System;
+﻿using App.Core.Enums;
+using System;
 
-namespace App.Core.Model
+namespace App.Core.Solver.CycleProvider
 {
    public class CyclePoint
    {
-      public enum CyclePointType
-      {
-         CyklDodatni,
-         CyklUjemny,
-      }
-
-
       public Guid CycleId { get; set; }
 
       public int X { get; }
@@ -20,8 +14,6 @@ namespace App.Core.Model
       public string Id { get; }
 
       public bool IsStart { get; }
-
-      public int MyProperty { get; set; }
 
       public CyclePointType? Type { get; set; }
 
@@ -41,7 +33,7 @@ namespace App.Core.Model
          if (IsInGridScope())
             Id = Y.ToString() + X.ToString();
          if (IsStart)
-            Type = CyclePointType.CyklDodatni;
+            Type = CyclePointType.Positive;
       }
 
 

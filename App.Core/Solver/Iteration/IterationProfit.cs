@@ -1,17 +1,16 @@
-﻿using App.Core.Solver;
-using System;
+﻿using App.Core.Enums;
+using App.Core.Model;
+using App.Core.Solver.CycleProvider;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace App.Core.Model
+namespace App.Core.Solver
 {
-   public class IterationZysk : IterationBase 
+   public class IterationProfit : IterationBase 
    {
 
-      public IterationZysk(GridCell[][] a_grid, int a_number)
-         : base(a_grid, a_number)
+      public IterationProfit(GridCell[][] a_grid, JobType a_jobType, int a_number)
+         : base(a_grid, a_jobType, a_number)
       {
       }
 
@@ -104,9 +103,9 @@ namespace App.Core.Model
       internal override void CalculateWspolczynnikiAlfaAndBeta()
       {
          #region [Impl]
-         Alfa = new int?[DataGrid.Length];
+         Alpha = new int?[DataGrid.Length];
          Beta = new int?[DataGrid[0].Length];
-         Alfa[0] = 0;
+         Alpha[0] = 0;
          var isCalculated = false;
          var iteration = 0;
          while (!isCalculated)
@@ -116,32 +115,32 @@ namespace App.Core.Model
                if (Beta[b] != null)
                   continue;
 
-               for (int a = 0; a < Alfa.Length; a++)
+               for (int a = 0; a < Alpha.Length; a++)
                {
-                  if (Alfa[a] != null && DataGrid[a][b].Przydzial != null)
+                  if (Alpha[a] != null && DataGrid[a][b].Przydzial != null)
                   {
-                     Beta[b] = DataGrid[a][b].Zysk - Alfa[a];
+                     Beta[b] = DataGrid[a][b].Zysk - Alpha[a];
                      break;
                   }
                }
             }
 
-            for (int a = 0; a < Alfa.Length; a++)
+            for (int a = 0; a < Alpha.Length; a++)
             {
-               if (Alfa[a] != null)
+               if (Alpha[a] != null)
                   continue;
 
                for (int b = 0; b < Beta.Length; b++)
                {
                   if (Beta[b] != null && DataGrid[a][b].Przydzial != null)
                   {
-                     Alfa[a] = DataGrid[a][b].Zysk - Beta[b];
+                     Alpha[a] = DataGrid[a][b].Zysk - Beta[b];
                      break;
                   }
                }
             }
 
-            if (Alfa.All(a => a != null) && Beta.All(b => b != null))
+            if (Alpha.All(a => a != null) && Beta.All(b => b != null))
                isCalculated = true;
 
             if (iteration++ > 10)
@@ -164,7 +163,7 @@ namespace App.Core.Model
                if (cell.Przydzial != null)
                   cell.DeltaNiebazowa = null;
                else
-                  cell.DeltaNiebazowa = cell.Zysk - Alfa[y] - Beta[x];
+                  cell.DeltaNiebazowa = cell.Zysk - Alpha[y] - Beta[x];
             }
          }
       }
@@ -187,7 +186,7 @@ namespace App.Core.Model
 
       public override GridCell[][] CalculateNextIteration()
       {
-         var cycleDetector = new CycleDetector(DataGrid, CycleDetector.CycleType.Positive).Detect();
+         var cycleDetector = new CycleDetector(DataGrid, CycleBaseType.Maximizing).Detect();
 
          if (cycleDetector.Error.IsError)
          {
@@ -203,7 +202,7 @@ namespace App.Core.Model
          }
 
          var cycle = cycleDetector.WyznaczonyCykl;
-         Cykl = cycle;
+         Cycle = cycle;
          var przydzial = cycleDetector.FindPrzydzialDoOptymalizacji();
 
          var nextIterationGrid = Utility.CreateEmptyCellGrid(DataGrid.Length, DataGrid[0].Length);

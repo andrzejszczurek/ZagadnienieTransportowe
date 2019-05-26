@@ -1,18 +1,13 @@
-﻿using App.Core.Model;
+﻿using App.Core.Enums;
+using App.Core.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace App.Core.Solver
+namespace App.Core.Solver.CycleProvider
 {
    public class CycleDetector
    {
-      public enum CycleType
-      {
-         Positive,
-         Nagative
-      }
-
       public string CycleElementId { get; private set; }
 
       public Cycle WyznaczonyCykl { get; private set; }
@@ -24,10 +19,10 @@ namespace App.Core.Solver
       private GridCell[][] m_grid;
 
 
-      public CycleDetector(GridCell[][] a_grid, CycleType a_cycleType)
+      public CycleDetector(GridCell[][] a_grid, CycleBaseType a_cycleType)
       {
          m_grid = a_grid;
-         CycleElementId = a_cycleType == CycleType.Nagative 
+         CycleElementId = a_cycleType == CycleBaseType.Minimizing 
                               ? FindLeastElementId() 
                               : FindMaxElementId();
          if (Error.IsError)
@@ -236,10 +231,10 @@ namespace App.Core.Solver
          punktyCyklu.Remove(p2_negatywny);
          var p2_pozytywny = punktyCyklu.First();
 
-         poz_el.Type = CyclePoint.CyclePointType.CyklDodatni;
-         p1_negatywny.Type = CyclePoint.CyclePointType.CyklUjemny;
-         p2_negatywny.Type = CyclePoint.CyclePointType.CyklUjemny;
-         p2_pozytywny.Type = CyclePoint.CyclePointType.CyklDodatni;
+         poz_el.Type = CyclePointType.Positive;
+         p1_negatywny.Type = CyclePointType.Positive;
+         p2_negatywny.Type = CyclePointType.Positive;
+         p2_pozytywny.Type = CyclePointType.Positive;
       }
 
    }

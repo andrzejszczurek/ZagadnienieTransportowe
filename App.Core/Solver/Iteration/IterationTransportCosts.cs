@@ -1,15 +1,17 @@
-﻿using App.Core.Solver;
+﻿using App.Core.Enums;
+using App.Core.Model;
+using App.Core.Solver.CycleProvider;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace App.Core.Model
+namespace App.Core.Solver
 {
-   public class IterationKosztyTransportu : IterationBase
+   public class IterationTransportCosts : IterationBase
    {
 
-      public IterationKosztyTransportu(GridCell[][] a_grid, int a_number)
-         : base(a_grid, a_number)
+      public IterationTransportCosts(GridCell[][] a_grid, JobType a_jobType, int a_number)
+         : base(a_grid, a_jobType, a_number)
       {
       }
 
@@ -30,7 +32,7 @@ namespace App.Core.Model
 
       public override GridCell[][] CalculateNextIteration()
       {
-         var cycleDetector = new CycleDetector(DataGrid, CycleDetector.CycleType.Nagative).Detect();
+         var cycleDetector = new CycleDetector(DataGrid, CycleBaseType.Minimizing).Detect();
 
          if (cycleDetector.Error.IsError)
          {
@@ -46,7 +48,7 @@ namespace App.Core.Model
          }
 
          var cycle = cycleDetector.WyznaczonyCykl;
-         Cykl = cycle;
+         Cycle = cycle;
          var przydzial = cycleDetector.FindPrzydzialDoOptymalizacji();
 
          var nextIterationGrid = Utility.CreateEmptyCellGrid(DataGrid.Length, DataGrid[0].Length);
@@ -160,16 +162,16 @@ namespace App.Core.Model
                if (cell.Przydzial != null)
                   cell.DeltaNiebazowa = null;
                else
-                  cell.DeltaNiebazowa = cell.KosztyJednostkowe - Alfa[y] - Beta[x];
+                  cell.DeltaNiebazowa = cell.KosztyJednostkowe - Alpha[y] - Beta[x];
             }
          }
       }
 
       internal override void CalculateWspolczynnikiAlfaAndBeta()
       {
-         Alfa = new int?[DataGrid.Length];
+         Alpha = new int?[DataGrid.Length];
          Beta = new int?[DataGrid[0].Length];
-         Alfa[0] = 0;
+         Alpha[0] = 0;
          var isCalculated = false;
          var iteration = 0;
          while (!isCalculated)
@@ -179,32 +181,32 @@ namespace App.Core.Model
                if (Beta[b] != null)
                   continue;
 
-               for (int a = 0; a < Alfa.Length; a++)
+               for (int a = 0; a < Alpha.Length; a++)
                {
-                  if (Alfa[a] != null && DataGrid[a][b].Przydzial != null)
+                  if (Alpha[a] != null && DataGrid[a][b].Przydzial != null)
                   {
-                     Beta[b] = DataGrid[a][b].KosztyJednostkowe - Alfa[a];
+                     Beta[b] = DataGrid[a][b].KosztyJednostkowe - Alpha[a];
                      break;
                   }
                }
             }
 
-            for (int a = 0; a < Alfa.Length; a++)
+            for (int a = 0; a < Alpha.Length; a++)
             {
-               if (Alfa[a] != null)
+               if (Alpha[a] != null)
                   continue;
 
                for (int b = 0; b < Beta.Length; b++)
                {
                   if (Beta[b] != null && DataGrid[a][b].Przydzial != null)
                   {
-                     Alfa[a] = DataGrid[a][b].KosztyJednostkowe - Beta[b];
+                     Alpha[a] = DataGrid[a][b].KosztyJednostkowe - Beta[b];
                      break;
                   }
                }
             }
 
-            if (Alfa.All(a => a != null) && Beta.All(b => b != null))
+            if (Alpha.All(a => a != null) && Beta.All(b => b != null))
                isCalculated = true;
 
             if (iteration++ > 10)
